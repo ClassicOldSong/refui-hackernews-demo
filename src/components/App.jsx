@@ -12,12 +12,22 @@ const App = () => {
 		Jobs: 'jobstories'
 	}
 
-	// Helper to get section from hash, default to 'topstories'
 	const getSectionFromHash = () => {
 		const hash = window.location.hash.substring(1) // Remove #
 		const section = Object.values(SECTIONS).find((s) => s === hash)
 		return section || 'topstories'
 	}
+
+	const isDarkMode = signal(localStorage.getItem('darkMode') === 'true');
+
+	watch(() => {
+		if (isDarkMode.value) {
+			document.body.classList.add('dark-mode');
+		} else {
+			document.body.classList.remove('dark-mode');
+		}
+		localStorage.setItem('darkMode', isDarkMode.value.toString());
+	});
 
 	// --- State Signals ---
 	const allStoryIds = signal([]) // Stores all fetched story IDs for the current section
@@ -121,6 +131,9 @@ const App = () => {
 				))}
 				<button class="refresh-btn" on:click={() => fetchStoryIds(currentSection.value)} disabled={isLoading}>
 					&#x21bb;
+				</button>
+				<button class="dark-mode-toggle" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
+					{$(() => (isDarkMode.value ? 'Light Mode' : 'Dark Mode'))}
 				</button>
 			</div>
 			<div class="main-layout">

@@ -10,6 +10,41 @@ body {
 	flex-direction: column;
 }
 
+body.dark-mode {
+	background-color: #282c34;
+	color: #abb2bf;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+	width: 12px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #888;
+	border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #555;
+}
+
+body.dark-mode ::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+	background: #555;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+	background: #777;
+}
+
 #app {
 	height: 100%;
 	width: 100%; /* Take full width */
@@ -21,6 +56,10 @@ body {
 	padding: 0;
 	display: flex;
 	flex-direction: column;
+}
+
+body.dark-mode #app {
+	background-color: #21252b;
 }
 
 .page-title {
@@ -56,14 +95,16 @@ body {
 	box-sizing: border-box; /* Include padding in width/height */
 }
 
+body.dark-mode .comments-panel {
+	border-left-color: #3a3f4b;
+}
+
 .resizer {
-	width: 8px;
+	width: 6px;
 	background-color: transparent;
 	cursor: ew-resize;
 	flex-shrink: 0;
 }
-
-
 
 /* Tabs and Buttons */
 .tabs {
@@ -73,6 +114,10 @@ body {
 	border-bottom: 1px solid #eee;
 	padding: 10px 20px; /* Add padding */
 	align-items: center;
+}
+
+body.dark-mode .tabs {
+	border-bottom-color: #3a3f4b;
 }
 
 .tabs button {
@@ -85,11 +130,27 @@ body {
 	transition: background-color 0.2s, border-color 0.2s;
 }
 
+body.dark-mode .tabs button {
+	background-color: #3a3f4b;
+	border-color: #4a505c;
+	color: #abb2bf;
+}
+
 .tabs button:hover {
 	background-color: #e0e0e0;
 }
 
+body.dark-mode .tabs button:hover {
+	background-color: #4a505c;
+}
+
 .tabs button.active {
+	background-color: #ff6600;
+	color: #fff;
+	border-color: #ff6600;
+}
+
+body.dark-mode .tabs button.active {
 	background-color: #ff6600;
 	color: #fff;
 	border-color: #ff6600;
@@ -106,13 +167,47 @@ body {
 	transition: background-color 0.2s, border-color 0.2s;
 }
 
+body.dark-mode .refresh-btn {
+	background-color: #3a3f4b;
+	border-color: #4a505c;
+	color: #abb2bf;
+}
+
 .refresh-btn:hover {
 	background-color: #e0e0e0;
+}
+
+body.dark-mode .refresh-btn:hover {
+	background-color: #4a505c;
 }
 
 .refresh-btn:disabled {
 	opacity: 0.6;
 	cursor: not-allowed;
+}
+
+.dark-mode-toggle {
+	background-color: #f0f0f0;
+	border: 1px solid #ddd;
+	padding: 8px 15px;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 1em;
+	transition: background-color 0.2s, border-color 0.2s;
+}
+
+body.dark-mode .dark-mode-toggle {
+	background-color: #3a3f4b;
+	border-color: #4a505c;
+	color: #abb2bf;
+}
+
+.dark-mode-toggle:hover {
+	background-color: #e0e0e0;
+}
+
+body.dark-mode .dark-mode-toggle:hover {
+	background-color: #4a505c;
 }
 
 /* Story Item */
@@ -127,13 +222,28 @@ body {
 	transition: background-color 0.2s;
 }
 
+body.dark-mode .story {
+	background-color: #21252b;
+	border-color: #3a3f4b;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
 .story:hover {
 	background-color: #f9f9f9;
+}
+
+body.dark-mode .story:hover {
+	background-color: #2c313a;
 }
 
 .story.selected {
 	border-left: 5px solid #ff6600;
 	background-color: #fff7f2;
+}
+
+body.dark-mode .story.selected {
+	background-color: #3a3f4b;
+	border-left-color: #ff6600;
 }
 
 .story-title {
@@ -147,6 +257,10 @@ body {
 	text-decoration: none;
 }
 
+body.dark-mode .story-title a {
+	color: #abb2bf;
+}
+
 .story-title a:hover {
 	text-decoration: underline;
 }
@@ -156,9 +270,17 @@ body {
 	color: #888;
 }
 
+body.dark-mode .story-meta {
+	color: #888;
+}
+
 .story-meta a {
 	color: #888;
 	text-decoration: none;
+}
+
+body.dark-mode .story-meta a {
+	color: #888;
 }
 
 .story-meta a:hover {
@@ -173,10 +295,19 @@ body {
 	color: #555;
 }
 
+body.dark-mode .loading {
+	color: #abb2bf;
+}
+
 .story-placeholder {
 	background-color: #f9f9f9;
 	border-color: #eee;
 	animation: pulse 1.5s infinite ease-in-out;
+}
+
+body.dark-mode .story-placeholder {
+	background-color: #3a3f4b;
+	border-color: #4a505c;
 }
 
 .placeholder-text {
@@ -186,6 +317,10 @@ body {
 	height: 1em;
 	border-radius: 3px;
 	min-width: 100px;
+}
+
+body.dark-mode .placeholder-text {
+	background-color: #4a505c;
 }
 
 .story-title .placeholder-text {
@@ -205,6 +340,12 @@ body {
 	margin-bottom: 10px;
 }
 
+body.dark-mode .story-error {
+	background-color: #4a2c2c;
+	border-color: #8b0000;
+	color: #ff6666;
+}
+
 /* Load More Button */
 .load-more-btn {
 	display: block;
@@ -220,9 +361,20 @@ body {
 	margin-top: 10px;
 }
 
+body.dark-mode .load-more-btn {
+	background-color: #3a3f4b;
+	border-color: #4a505c;
+	color: #abb2bf;
+}
+
 .load-more-btn:hover {
 	background-color: #e0e0e0;
 	color: #333;
+}
+
+body.dark-mode .load-more-btn:hover {
+	background-color: #4a505c;
+	color: #abb2bf;
 }
 
 .load-more-btn:disabled {
@@ -247,6 +399,10 @@ body {
 	padding-bottom: 10px;
 }
 
+body.dark-mode .comments-header {
+	border-bottom-color: #3a3f4b;
+}
+
 .comments-header h3 {
 	color: #ff6600;
 	margin: 0;
@@ -266,15 +422,28 @@ body {
 	margin-bottom: 10px;
 }
 
+body.dark-mode .comment-item {
+	background-color: #2c313a;
+	border-color: #3a3f4b;
+}
+
 .comment-meta {
 	font-size: 0.8em;
 	color: #888;
 	margin-bottom: 5px;
 }
 
+body.dark-mode .comment-meta {
+	color: #888;
+}
+
 .comment-meta a {
 	color: #888;
 	text-decoration: none;
+}
+
+body.dark-mode .comment-meta a {
+	color: #888;
 }
 
 .comment-meta a:hover {
@@ -289,6 +458,14 @@ body {
 	}
 }
 
+body.dark-mode .comment-text {
+	color: #abb2bf;
+}
+
+body.dark-mode .comment-text a {
+	color: #61afef; /* A readable blue for links in dark mode */
+}
+
 .comment-text p {
 	margin: 0 0 5px 0;
 }
@@ -299,10 +476,19 @@ body {
 	margin-top: 10px;
 }
 
+body.dark-mode .comment-children {
+	border-left-color: #ff6600;
+}
+
 .comment-placeholder {
 	background-color: #f0f0f0;
 	border-color: #ddd;
 	animation: pulse 1.5s infinite ease-in-out;
+}
+
+body.dark-mode .comment-placeholder {
+	background-color: #3a3f4b;
+	border-color: #4a505c;
 }
 
 .comment-error {
@@ -314,6 +500,12 @@ body {
 	margin-bottom: 10px;
 }
 
+body.dark-mode .comment-error {
+	background-color: #4a2c2c;
+	border-color: #8b0000;
+	color: #ff6666;
+}
+
 .deleted-comment {
 	font-style: italic;
 	color: #888;
@@ -323,10 +515,19 @@ body {
 	margin-bottom: 10px;
 }
 
+body.dark-mode .deleted-comment {
+	background-color: #3a3f4b;
+	color: #888;
+}
+
 .no-comments {
 	text-align: center;
 	color: #888;
 	padding: 20px;
+}
+
+body.dark-mode .no-comments {
+	color: #888;
 }
 
 .no-story-selected {
@@ -335,4 +536,8 @@ body {
 	padding: 20px;
 	font-size: 1.1em;
 	margin-top: 50px;
+}
+
+body.dark-mode .no-story-selected {
+	color: #888;
 }
