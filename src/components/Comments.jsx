@@ -87,7 +87,7 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 }
 
 const Comments = ({ storyData, abort }) => {
-	const commentsPerPage = 10
+	const commentsPerPage = 5
 	const commentsToShow = signal(commentsPerPage)
 	const isLoadingComments = signal(false)
 	const { title, id, by, score, descendants, url, kids: allComments } = derivedExtract(storyData, 'title', 'id', 'by', 'score', 'descendants', 'url', 'kids')
