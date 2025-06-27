@@ -1,4 +1,4 @@
-import { signal, For, If, $, watch, onDispose } from 'refui'
+import { signal, For, If, $, t, watch, onDispose, derivedExtract } from 'refui'
 
 const CommentFallback = () => (R) => (
 	<div class="comment-item comment-placeholder">
@@ -12,7 +12,10 @@ const CommentFallback = () => (R) => (
 	</div>
 )
 
-const CommentItem = async ({ commentId, abort }) => {
+const ErrorFallback = ({ error }) => (R) => <div class="comment-error">Error: {error.message}</div>
+
+const CommentItem = async ({ commentId, abort, storyData, depth }) => {
+	const MAX_DEPTH = 3
 	try {
 		const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${commentId}.json`, { signal: abort })
 		if (!response.ok) {
@@ -25,6 +28,15 @@ const CommentItem = async ({ commentId, abort }) => {
 		}
 
 		const userUrl = `https://news.ycombinator.com/user?id=${comment.by}`
+		const storyUrl = `https://news.ycombinator.com/item?id=${storyData.value.id}`
+
+		const commentsPerPage = 5
+		const commentsToShow = signal(depth >= MAX_DEPTH ? 0 : commentsPerPage)
+		const childComments = $(() => comment.kids?.slice(0, commentsToShow.value) || [])
+
+		if (depth >= MAX_DEPTH) {
+			depth = 0
+		}
 
 		return (R) => (
 			<div class="comment-item">
@@ -38,9 +50,22 @@ const CommentItem = async ({ commentId, abort }) => {
 				<If condition={$(() => comment.kids && comment.kids.length > 0)}>
 					{() => (
 						<div class="comment-children">
-							<For entries={$(() => comment.kids)}>
-								{({ item: kidId }) => <CommentItem commentId={kidId} abort={abort} fallback={CommentFallback} />}
-							</For>
+							<If condition={$(() => depth < MAX_DEPTH || commentsToShow.value > 0)}>
+								{() => (
+									<For entries={childComments}>
+										{({ item: kidId }) => (
+											<CommentItem commentId={kidId} abort={abort} fallback={CommentFallback} catch={ErrorFallback} storyData={storyData} depth={depth + 1} />
+										)}
+									</For>
+								)}
+							</If>
+							<If condition={$(() => commentsToShow.value < comment.kids.length)}>
+								{() => (
+									<button class="load-more-btn" on:click={() => (commentsToShow.value += commentsPerPage)}>
+										Load More ({$(() => comment.kids.length - commentsToShow.value)})
+									</button>
+								)}
+							</If>
 						</div>
 					)}
 				</If>
@@ -49,18 +74,23 @@ const CommentItem = async ({ commentId, abort }) => {
 	} catch (error) {
 		if (error.name === 'AbortError') {
 			console.log('Fetch aborted for CommentItem:', commentId)
-			return () => null // Return null or a placeholder if aborted
+			return null // Return null or a placeholder if aborted
 		} else {
 			throw error // Re-throw other errors
 		}
 	}
 }
 
-const Comments = ({ title, storyId, abort }) => {
-	const storyData = signal(null)
-	const comments = signal([])
+const Comments = ({ storyData, abort }) => {
+	const commentsPerPage = 10
+	const commentsToShow = signal(commentsPerPage)
 	const isLoadingComments = signal(false)
-	const isLoadingStory = signal(true)
+	const { title, id, by, score, descendants, url, kids: allComments } = derivedExtract(storyData, 'title', 'id', 'by', 'score', 'descendants', 'url', 'kids')
+
+	const comments = $(() => allComments?.value?.slice(0, commentsToShow.value) || [])
+
+	const commentsUrl = t`https://news.ycombinator.com/item?id=${id}`
+	const userUrl = t`https://news.ycombinator.com/user?id=${by}`
 
 	let currentAbortController = null
 	const cancelRequests = () => {
@@ -71,94 +101,59 @@ const Comments = ({ title, storyId, abort }) => {
 
 	onDispose(cancelRequests)
 
-	// Watch for changes in storyId and fetch story data
-	watch(async () => {
-		isLoadingStory.value = true
-		storyData.value = null // Clear previous story data
-		comments.value = [] // Clear previous comments
-		if (!storyId.value) {
-			isLoadingStory.value = false
-			return
-		}
-
+	storyData.connect(() => {
 		cancelRequests()
 		currentAbortController = new AbortController()
-
-		try {
-			console.log('Fetching story data for storyId:', storyId.value)
-			const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${storyId.value}.json`, {
-				signal: currentAbortController.signal
-			})
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`)
-			}
-			const story = await response.json()
-			if (!story || story.deleted || story.dead) {
-				storyData.value = null // Indicate story not found/deleted
-			} else {
-				storyData.value = story
-			}
-		} catch (error) {
-			if (error.name === 'AbortError') {
-				console.log('Fetch aborted for story data:', storyId.value)
-			} else {
-				console.error('Error fetching story data:', error)
-				storyData.value = null
-			}
-		} finally {
-			isLoadingStory.value = false
-		}
-	})
-
-	// Watch for changes in storyData.kids and fetch comments
-	watch(async () => {
-		const kids = storyData.value?.kids
-		if (!kids || kids.length === 0) {
-			comments.value = []
-			return
-		}
-		isLoadingComments.value = true
-		try {
-			comments.value = kids
-		} catch (error) {
-			console.error('Error fetching comments:', error)
-			comments.value = []
-		} finally {
-			isLoadingComments.value = false
-		}
 	})
 
 	return (R) => (
 		<div class="comments-container">
-			<h3>{title}</h3>
-			<If condition={isLoadingStory}>
-				{() => <div class="loading">Loading story details...</div>}
+			<div class="comments-header">
+				<h3>
+					<a href={url} target="_blank">
+						{title}
+					</a>
+				</h3>
+				<div class="story-meta">
+					{score} points by{' '}
+					<a href={userUrl} target="_blank">
+						{by}
+					</a>{' '}
+					|{' '}
+					<a href={commentsUrl} target="_blank">
+						{descendants} comments
+					</a>
+				</div>
+			</div>
+			<If condition={isLoadingComments}>
+				{() => <div class="loading">Loading comments...</div>}
 				{() => (
-					<If condition={storyData}>
-						{() => (
-							<If condition={isLoadingComments}>
-								{() => <div class="loading">Loading comments...</div>}
-								{() => (
-									<If condition={$(() => comments.value.length > 0)}>
-										{() => (
-											<For entries={comments}>
-												{({ item: commentId }) => (
-													<CommentItem
-														commentId={commentId}
-														fallback={CommentFallback}
-														catch={({ error }) => <div class="comment-error">Error: {error.message}</div>}
-														abort={currentAbortController.signal}
-													/>
-												)}
-											</For>
-										)}
-										{() => <div class="no-comments">No comments yet.</div>}
-									</If>
-								)}
-							</If>
-						)}
-						{() => <div class="comments-container">Story not found or deleted.</div>}
-					</If>
+					<>
+						<If condition={$(() => comments.value.length > 0)}>
+							{() => (
+								<For entries={comments}>
+									{({ item: commentId }) => (
+										<CommentItem
+											commentId={commentId}
+											fallback={CommentFallback}
+											catch={ErrorFallback}
+											abort={currentAbortController.signal}
+											storyData={storyData}
+											depth={0}
+										/>
+									)}
+								</For>
+							)}
+							{() => <div class="no-comments">No comments yet.</div>}
+						</If>
+						<If condition={$(() => commentsToShow.value < allComments.value?.length)}>
+							{() => (
+								<button class="load-more-btn" on:click={() => (commentsToShow.value += commentsPerPage)}>
+									Load More ({$(() => allComments.value?.length - commentsToShow.value)})
+								</button>
+							)}
+						</If>
+					</>
 				)}
 			</If>
 		</div>

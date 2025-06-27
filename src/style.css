@@ -234,12 +234,21 @@ body {
 	padding: 10px;
 }
 
-.comments-container h3 {
-	color: #ff6600;
-	margin-top: 0;
+.comments-header {
 	margin-bottom: 15px;
 	border-bottom: 1px solid #eee;
 	padding-bottom: 10px;
+}
+
+.comments-header h3 {
+	color: #ff6600;
+	margin: 0;
+}
+
+.comments-header h3 a {
+	color: #ff6600;
+	text-decoration: none;
+	margin: 0;
 }
 
 .comment-item {
@@ -268,6 +277,9 @@ body {
 .comment-text {
 	font-size: 0.9em;
 	line-height: 1.5;
+	& pre {
+		white-space: pre-line;
+	}
 }
 
 .comment-text p {

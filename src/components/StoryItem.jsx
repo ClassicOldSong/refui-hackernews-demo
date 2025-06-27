@@ -27,7 +27,7 @@ const Story = async ({ storyId, onSelect, isSelected, abort }) => {
 
 		// This is the render function that will be used once the promise resolves
 		return (R) => (
-			<div class="story" class:selected={isSelected} on:click={() => onSelect(storyId, story.title)}>
+			<div class="story" class:selected={isSelected} on:click={() => onSelect(story)}>
 				<div class="story-title">
 					<a href={story.url || commentsUrl} target="_blank" rel="noopener noreferrer">
 						{story.title}

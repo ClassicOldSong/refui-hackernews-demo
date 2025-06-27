@@ -24,7 +24,7 @@ const App = () => {
 	const storiesLimit = signal(30) // Number of stories to display
 	const currentSection = signal(getSectionFromHash())
 	const isLoading = signal(false)
-	const selectedTitle = signal('')
+	const selectedStory = signal()
 	const selectedStoryId = signal(null)
 
 	let abortController = null
@@ -109,9 +109,9 @@ const App = () => {
 									{({ item: storyId }) => (
 										<StoryItem
 											storyId={storyId}
-											onSelect={(storyId, title) => {
-												selectedStoryId.value = storyId
-												selectedTitle.value = title
+											onSelect={(story) => {
+												selectedStoryId.value = story.id
+												selectedStory.value = story
 											}}
 											isSelected={selectedStoryId.eq(storyId)}
 											catch={({ error }) => <div class="story-error">Error: {error.message}</div>}
@@ -132,7 +132,7 @@ const App = () => {
 				</div>
 				<div class="comments-panel">
 					<If condition={selectedStoryId}>
-						{(R) => <Comments title={selectedTitle} storyId={selectedStoryId} abort={abortController.signal} />}
+						{(R) => <Comments storyData={selectedStory} storyId={selectedStoryId} abort={abortController.signal} />}
 					</If>
 				</div>
 			</div>
