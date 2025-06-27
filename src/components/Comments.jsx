@@ -1,4 +1,5 @@
 import { signal, For, If, $, t, watch, onDispose, derivedExtract } from 'refui'
+import { addTargetBlankToLinks } from '../utils/dom'
 
 const CommentFallback = () => (R) => (
 	<div class="comment-item comment-placeholder">
@@ -50,7 +51,7 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 						{comment.by}
 					</a>
 				</div>
-				<div class="comment-text" innerHTML={comment.text}></div>
+				<div class="comment-text">{addTargetBlankToLinks(comment.text)}</div>
 				<If condition={$(() => comment.kids && comment.kids.length > 0)}>
 					{() => (
 						<div class="comment-children">
