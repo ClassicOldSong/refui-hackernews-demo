@@ -23,8 +23,12 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 		}
 		const comment = await response.json()
 
-		if (!comment || comment.deleted || comment.dead) {
+		if (!comment || comment.dead) {
 			return () => null
+		}
+
+		if (comment.deleted) {
+			return (R) => <div class="comment-item deleted-comment">[deleted]</div>
 		}
 
 		const userUrl = `https://news.ycombinator.com/user?id=${comment.by}`

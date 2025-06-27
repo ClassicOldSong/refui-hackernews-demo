@@ -57,8 +57,8 @@ body {
 }
 
 .resizer {
-	width: 10px;
-	background-color: #ccc;
+	width: 8px;
+	background-color: transparent;
 	cursor: ew-resize;
 	flex-shrink: 0;
 }
@@ -314,8 +314,25 @@ body {
 	margin-bottom: 10px;
 }
 
+.deleted-comment {
+	font-style: italic;
+	color: #888;
+	background-color: #f0f0f0;
+	padding: 10px;
+	border-radius: 5px;
+	margin-bottom: 10px;
+}
+
 .no-comments {
 	text-align: center;
 	color: #888;
 	padding: 20px;
+}
+
+.no-story-selected {
+	text-align: center;
+	color: #888;
+	padding: 20px;
+	font-size: 1.1em;
+	margin-top: 50px;
 }

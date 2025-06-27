@@ -158,6 +158,7 @@ const App = () => {
 				<div class="comments-panel" style={$(() => `flex-basis: ${100 - storyListWidth.value}%;`)}>
 					<If condition={selectedStoryId}>
 						{(R) => <Comments storyData={selectedStory} storyId={selectedStoryId} abort={abortController.signal} />}
+						{() => <div class="no-story-selected">Select a story to view comments.</div>}
 					</If>
 				</div>
 			</div>
