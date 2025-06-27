@@ -26,6 +26,30 @@ const App = () => {
 	const isLoading = signal(false)
 	const selectedStory = signal()
 	const selectedStoryId = signal(null)
+	const storyListWidth = signal(parseFloat(localStorage.getItem('storyListWidth') || '30'));
+
+	watch(() => {
+		localStorage.setItem('storyListWidth', storyListWidth.value.toString());
+	});
+
+	const startDragging = (e) => {
+		e.preventDefault();
+		const startX = e.clientX;
+		const startWidth = storyListWidth.value;
+
+		const doDrag = (e) => {
+			const newWidth = startWidth + ((e.clientX - startX) / window.innerWidth) * 100;
+			storyListWidth.value = Math.max(20, Math.min(80, newWidth)); // Clamp between 20% and 80%
+		};
+
+		const stopDrag = () => {
+			window.removeEventListener('mousemove', doDrag);
+			window.removeEventListener('mouseup', stopDrag);
+		};
+
+		window.addEventListener('mousemove', doDrag);
+		window.addEventListener('mouseup', stopDrag);
+	};
 
 	let abortController = null
 	const cancelRequests = () => {
@@ -100,7 +124,7 @@ const App = () => {
 				</button>
 			</div>
 			<div class="main-layout">
-				<div class="story-list">
+				<div class="story-list" style={$(() => `flex-basis: ${storyListWidth.value}%;`)}>
 					<If condition={isLoading}>
 						{() => <div class="loading">Loading story list...</div>}
 						{() => (
@@ -130,7 +154,8 @@ const App = () => {
 						)}
 					</If>
 				</div>
-				<div class="comments-panel">
+				<div class="resizer" on:mousedown={startDragging}></div>
+				<div class="comments-panel" style={$(() => `flex-basis: ${100 - storyListWidth.value}%;`)}>
 					<If condition={selectedStoryId}>
 						{(R) => <Comments storyData={selectedStory} storyId={selectedStoryId} abort={abortController.signal} />}
 					</If>
