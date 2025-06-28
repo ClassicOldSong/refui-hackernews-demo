@@ -2,6 +2,8 @@ rEFui is a **retained mode** renderer, you need to understand its difference wit
 
 For this project, the DOM renderer and Browser preset is used.
 
+Follow the code style in @.editorconfig .
+
 **Important Notes for this Project:**
 *   **Retained Mode Rendering:** rEFui directly manages the DOM based on state, unlike virtual DOM libraries.
 *   **Browser Preset:** The project utilizes `refui/browser` for rendering.

@@ -1,5 +1,7 @@
-import { signal, For, If, $, t, watch, onDispose, derivedExtract } from 'refui'
-import { addTargetBlankToLinks } from '../utils/dom'
+import { signal, For, If, $, t, watch, onDispose, derivedExtract, Render } from 'refui'
+import { Parse } from 'refui/extras/parse.js'
+import { addTargetBlankToLinks } from '../utils/dom.js'
+import { formatTime } from '../utils/time.js'
 
 const CommentFallback = () => (R) => (
 	<div class="comment-item comment-placeholder">
@@ -13,7 +15,9 @@ const CommentFallback = () => (R) => (
 	</div>
 )
 
-const ErrorFallback = ({ error }) => (R) => <div class="comment-error">Error: {error.message}</div>
+const ErrorFallback =
+	({ error }) =>
+	(R) => <div class="comment-error">Error: {error.message}</div>
 
 const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 	const MAX_DEPTH = 3
@@ -49,9 +53,12 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 					by{' '}
 					<a href={userUrl} target="_blank">
 						{comment.by}
-					</a>
+					</a>{' '}
+					| {formatTime(comment.time)}
 				</div>
-				<div class="comment-text">{addTargetBlankToLinks(comment.text)}</div>
+				<div class="comment-text">
+					<Parse text={comment.text} parser={addTargetBlankToLinks} />
+				</div>
 				<If condition={$(() => comment.kids && comment.kids.length > 0)}>
 					{() => (
 						<div class="comment-children">
@@ -59,7 +66,14 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 								{() => (
 									<For entries={childComments}>
 										{({ item: kidId }) => (
-											<CommentItem commentId={kidId} abort={abort} fallback={CommentFallback} catch={ErrorFallback} storyData={storyData} depth={depth + 1} />
+											<CommentItem
+												commentId={kidId}
+												abort={abort}
+												fallback={CommentFallback}
+												catch={ErrorFallback}
+												storyData={storyData}
+												depth={depth + 1}
+											/>
 										)}
 									</For>
 								)}
@@ -86,13 +100,24 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 	}
 }
 
-const Comments = ({ storyData, abort }) => {
+const Comments = ({ storyData }) => {
 	const commentsPerPage = 5
 	const commentsToShow = signal(commentsPerPage)
 	const isLoadingComments = signal(false)
-	const { title, id, by, score, descendants, url, kids: allComments } = derivedExtract(storyData, 'title', 'id', 'by', 'score', 'descendants', 'url', 'kids')
+	const { title, id, by, score, descendants, url, kids, text, time } = derivedExtract(
+		storyData,
+		'title',
+		'id',
+		'by',
+		'score',
+		'descendants',
+		'url',
+		'kids',
+		'text',
+		'time'
+	)
 
-	const comments = $(() => allComments?.value?.slice(0, commentsToShow.value) || [])
+	const comments = $(() => kids.value?.slice(0, commentsToShow.value) || [])
 
 	const commentsUrl = t`https://news.ycombinator.com/item?id=${id}`
 	const userUrl = t`https://news.ycombinator.com/user?id=${by}`
@@ -102,7 +127,6 @@ const Comments = ({ storyData, abort }) => {
 		console.log('Comments unmounted or refreshed, aborting all pending requests.')
 		currentAbortController?.abort()
 	}
-	abort.addEventListener('abort', cancelRequests)
 
 	onDispose(cancelRequests)
 
@@ -123,12 +147,21 @@ const Comments = ({ storyData, abort }) => {
 					{score} points by{' '}
 					<a href={userUrl} target="_blank">
 						{by}
-					</a>{' '}
-					|{' '}
+					</a>
+					{' | '}
 					<a href={commentsUrl} target="_blank">
 						{descendants} comments
 					</a>
+					{' | '}
+					<span class="time">{$(() => formatTime(time.value))}</span>
 				</div>
+				<If condition={text}>
+					{() => (
+						<div class="story-text">
+							<Parse text={text} parser={addTargetBlankToLinks} />
+						</div>
+					)}
+				</If>
 			</div>
 			<If condition={isLoadingComments}>
 				{() => <div class="loading">Loading comments...</div>}
@@ -142,8 +175,8 @@ const Comments = ({ storyData, abort }) => {
 											commentId={commentId}
 											fallback={CommentFallback}
 											catch={ErrorFallback}
-											abort={currentAbortController.signal}
 											storyData={storyData}
+											abort={currentAbortController.signal}
 											depth={0}
 										/>
 									)}
@@ -151,10 +184,10 @@ const Comments = ({ storyData, abort }) => {
 							)}
 							{() => <div class="no-comments">No comments yet.</div>}
 						</If>
-						<If condition={$(() => commentsToShow.value < allComments.value?.length)}>
+						<If condition={$(() => commentsToShow.value < kids.value?.length)}>
 							{() => (
 								<button class="load-more-btn" on:click={() => (commentsToShow.value += commentsPerPage)}>
-									Load More ({$(() => allComments.value?.length - commentsToShow.value)})
+									Load More ({$(() => kids.value?.length - commentsToShow.value)})
 								</button>
 							)}
 						</If>

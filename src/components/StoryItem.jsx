@@ -1,3 +1,6 @@
+import { onDispose } from 'refui';
+import { formatTime } from '../utils/time.js';
+
 const StoryFallback = () => (R) => (
 	<div class="story story-placeholder">
 		<div class="story-title">
@@ -11,19 +14,19 @@ const StoryFallback = () => (R) => (
 
 const Story = async ({ storyId, onSelect, isSelected, abort }) => {
 	try {
-		const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${storyId}.json`, { signal: abort })
+		const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${storyId}.json`, { signal: abort });
 		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`)
+			throw new Error(`HTTP error! status: ${response.status}`);
 		}
-		const story = await response.json()
+		const story = await response.json();
 
 		// Don't render anything if the story is deleted, dead, or missing a title
 		if (!story || story.deleted || story.dead || !story.title) {
-			return () => null
+			return () => null;
 		}
 
-		const commentsUrl = `https://news.ycombinator.com/item?id=${story.id}`
-		const userUrl = `https://news.ycombinator.com/user?id=${story.by}`
+		const commentsUrl = `https://news.ycombinator.com/item?id=${story.id}`;
+		const userUrl = `https://news.ycombinator.com/user?id=${story.by}`;
 
 		// This is the render function that will be used once the promise resolves
 		return (R) => (
@@ -42,18 +45,20 @@ const Story = async ({ storyId, onSelect, isSelected, abort }) => {
 					<a href={commentsUrl} target="_blank">
 						{story.descendants || 0} comments
 					</a>
+					{' '}|{' '}
+					<span class="time">{formatTime(story.time)}</span>
 				</div>
 			</div>
-		)
+		);
 	} catch (error) {
 		if (error.name === 'AbortError') {
-			console.log('Fetch aborted for Story:', storyId)
-			return null // Return null or a placeholder if aborted
+			console.log('Fetch aborted for Story:', storyId);
+			return () => null; // Return a render function that renders nothing
 		} else {
-			throw error // Re-throw other errors
+			throw error; // Re-throw other errors
 		}
 	}
-}
+};
 
 const StoryItem = ({ ...args }) => {
 	return (R) => <Story {...args} fallback={StoryFallback} />

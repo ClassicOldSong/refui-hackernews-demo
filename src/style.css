@@ -1,6 +1,16 @@
 /* General styles */
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
 body {
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 	margin: 0;
 	padding: 0;
 	background-color: #f6f6ef;
@@ -127,7 +137,9 @@ body.dark-mode .tabs {
 	border-radius: 5px;
 	cursor: pointer;
 	font-size: 1em;
-	transition: background-color 0.2s, border-color 0.2s;
+	transition:
+		background-color 0.2s,
+		border-color 0.2s;
 }
 
 body.dark-mode .tabs button {
@@ -156,58 +168,40 @@ body.dark-mode .tabs button.active {
 	border-color: #ff6600;
 }
 
+.tabs .btn {
+	background-color: #f0f0f0;
+	color: black;
+	border: 1px solid #ddd;
+	padding: 8px 15px;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 1em;
+	font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+	text-decoration: none;
+	line-height: 1em;
+	transition:
+		background-color 0.2s,
+		border-color 0.2s;
+
+	&:hover {
+		background-color: #e0e0e0;
+	}
+}
+
 .refresh-btn {
 	margin-left: auto;
-	background-color: #f0f0f0;
-	border: 1px solid #ddd;
-	padding: 8px 15px;
-	border-radius: 5px;
-	cursor: pointer;
-	font-size: 1em;
-	transition: background-color 0.2s, border-color 0.2s;
 }
 
-body.dark-mode .refresh-btn {
-	background-color: #3a3f4b;
-	border-color: #4a505c;
-	color: #abb2bf;
-}
+body.dark-mode {
+	& .tabs .btn {
+		background-color: #3a3f4b;
+		border-color: #4a505c;
+		color: #abb2bf;
 
-.refresh-btn:hover {
-	background-color: #e0e0e0;
-}
-
-body.dark-mode .refresh-btn:hover {
-	background-color: #4a505c;
-}
-
-.refresh-btn:disabled {
-	opacity: 0.6;
-	cursor: not-allowed;
-}
-
-.dark-mode-toggle {
-	background-color: #f0f0f0;
-	border: 1px solid #ddd;
-	padding: 8px 15px;
-	border-radius: 5px;
-	cursor: pointer;
-	font-size: 1em;
-	transition: background-color 0.2s, border-color 0.2s;
-}
-
-body.dark-mode .dark-mode-toggle {
-	background-color: #3a3f4b;
-	border-color: #4a505c;
-	color: #abb2bf;
-}
-
-.dark-mode-toggle:hover {
-	background-color: #e0e0e0;
-}
-
-body.dark-mode .dark-mode-toggle:hover {
-	background-color: #4a505c;
+		&:hover {
+			background-color: #4a505c;
+		}
+	}
 }
 
 /* Story Item */
@@ -270,23 +264,23 @@ body.dark-mode .story-title a {
 	color: #888;
 }
 
-body.dark-mode .story-meta {
-	color: #888;
+.story-meta {
+	& a {
+		color: #888;
+		text-decoration: none;
+		&:hover{
+			text-decoration: underline;
+		}
+	}
 }
 
-.story-meta a {
-	color: #888;
-	text-decoration: none;
+body.dark-mode {
+	& .story-meta {
+		& a {
+			color: #888;
+		}
+	}
 }
-
-body.dark-mode .story-meta a {
-	color: #888;
-}
-
-.story-meta a:hover {
-	text-decoration: underline;
-}
-
 /* Loading and Error States */
 .loading {
 	text-align: center;
@@ -357,7 +351,10 @@ body.dark-mode .story-error {
 	cursor: pointer;
 	font-size: 1em;
 	color: #555;
-	transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+	transition:
+		background-color 0.2s,
+		border-color 0.2s,
+		color 0.2s;
 	margin-top: 10px;
 }
 
@@ -383,9 +380,15 @@ body.dark-mode .load-more-btn:hover {
 }
 
 @keyframes pulse {
-	0% { opacity: 1; }
-	50% { opacity: 0.7; }
-	100% { opacity: 1; }
+	0% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.7;
+	}
+	100% {
+		opacity: 1;
+	}
 }
 
 /* Comments Panel Styles */
@@ -458,12 +461,14 @@ body.dark-mode .comment-meta a {
 	}
 }
 
-body.dark-mode .comment-text {
-	color: #abb2bf;
-}
-
-body.dark-mode .comment-text a {
-	color: #61afef; /* A readable blue for links in dark mode */
+body.dark-mode {
+	& .comment-text, .story-text {
+		color: #abb2bf;
+		& a {
+			color: #61afef; /* A readable blue for links in dark mode */
+			text-decoration: underline;
+		}
+	}
 }
 
 .comment-text p {
@@ -540,4 +545,26 @@ body.dark-mode .no-comments {
 
 body.dark-mode .no-story-selected {
 	color: #888;
+}
+
+.story-text {
+	background-color: #f0f0f0;
+	border: 1px solid #ddd;
+	padding: 15px;
+	border-radius: 5px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	font-size: 0.9em;
+	line-height: 1.5;
+}
+
+body.dark-mode .story-text {
+	background-color: #3a3f4b;
+	border-color: #4a505c;
+	color: #abb2bf;
+}
+
+.story-text pre {
+	white-space: pre-wrap;
+	word-wrap: break-word;
 }

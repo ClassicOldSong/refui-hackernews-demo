@@ -61,13 +61,6 @@ const App = () => {
 		window.addEventListener('mouseup', stopDrag);
 	};
 
-	let abortController = null
-	const cancelRequests = () => {
-		console.log('App component unmounted or refreshed, aborting all pending requests.')
-		abortController?.abort()
-	}
-	onDispose(cancelRequests)
-
 	// Derived signal for stories currently displayed
 	const storyIds = $(() => allStoryIds.value.slice(0, storiesLimit.value))
 
@@ -90,18 +83,15 @@ const App = () => {
 	})
 
 	// --- Data Fetching ---
-	async function fetchStoryIds(section) {
+	async function fetchStoryIds(section, abort) {
 		if (!section) return
 		isLoading.value = true
 		allStoryIds.value = [] // Clear previous stories
 		storiesLimit.value = 30 // Reset limit when fetching new section
 
-		cancelRequests()
-		abortController = new AbortController()
-
 		try {
 			const response = await fetch(`https://hacker-news.firebaseio.com/v0/${section}.json`, {
-				signal: abortController.signal
+				signal: abort,
 			})
 			const ids = await response.json()
 			allStoryIds.value = ids
@@ -117,24 +107,45 @@ const App = () => {
 		}
 	}
 
+	let abortController = null
+	const cancelRequests = () => {
+		console.log('App component unmounted or refreshed, aborting all pending requests.')
+		abortController?.abort()
+	}
+	onDispose(cancelRequests)
+
 	// --- Initial Setup & Reactivity ---
-	watch(() => fetchStoryIds(currentSection.value))
+	useEffect(() => {
+		abortController = new AbortController()
+		const dispose = watch(() => {
+			abortController.abort()
+			abortController = new AbortController()
+			fetchStoryIds(currentSection.value, abortController.signal)
+		})
+		return () => {
+			abortController.abort()
+			dispose()
+		}
+	})
 
 	return (R) => (
 		<>
 			<div class="tabs">
 				<h1 class="page-title">HackerNews</h1>
 				{Object.entries(SECTIONS).map(([name, value]) => (
-					<button class:active={currentSection.eq(value)} on:click={() => (currentSection.value = value)}>
+					<button class="btn" class:active={currentSection.eq(value)} on:click={() => (currentSection.value = value)}>
 						{name}
 					</button>
 				))}
-				<button class="refresh-btn" on:click={() => fetchStoryIds(currentSection.value)} disabled={isLoading}>
+				<button class="refresh-btn btn" on:click={() => fetchStoryIds(currentSection.value)} disabled={isLoading}>
 					&#x21bb;
 				</button>
-				<button class="dark-mode-toggle" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
+				<button class="btn" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
 					{$(() => (isDarkMode.value ? 'Light Mode' : 'Dark Mode'))}
 				</button>
+				<a href="https://github.com/ClassicOldSong/refui-hackernews-demo" target="_blank" class="btn">
+					GitHub
+				</a>
 			</div>
 			<div class="main-layout">
 				<div class="story-list" style={$(() => `flex-basis: ${storyListWidth.value}%;`)}>
@@ -170,7 +181,7 @@ const App = () => {
 				<div class="resizer" on:mousedown={startDragging}></div>
 				<div class="comments-panel" style={$(() => `flex-basis: ${100 - storyListWidth.value}%;`)}>
 					<If condition={selectedStoryId}>
-						{(R) => <Comments storyData={selectedStory} storyId={selectedStoryId} abort={abortController.signal} />}
+						{(R) => <Comments storyData={selectedStory} storyId={selectedStoryId} />}
 						{() => <div class="no-story-selected">Select a story to view comments.</div>}
 					</If>
 				</div>
