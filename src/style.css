@@ -3,7 +3,6 @@
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 
   /* Light Theme */
-  --bg-color: #f6f6ef;
   --text-color: #333;
   --app-bg-color: #fff;
   --border-color: #eee;
@@ -35,7 +34,6 @@
 
 .dark-mode {
   /* Dark Theme */
-  --bg-color: #282c34;
   --text-color: #abb2bf;
   --app-bg-color: #21252b;
   --border-color: #3a3f4b;
@@ -64,7 +62,7 @@ body {
   font-family: var(--font-family);
   margin: 0;
   padding: 0;
-  background-color: var(--bg-color);
+  background-color: var(--app-bg-color);
   color: var(--text-color);
   height: 100vh;
   display: flex;
@@ -128,8 +126,18 @@ body {
   display: flex;
   gap: 10px;
   border-bottom: 1px solid var(--border-color);
-  padding: 10px 20px;
   align-items: center;
+
+  app-region: drag;
+  user-select: none;
+  padding-left: calc(20px + env(titlebar-area-x,0px));
+  padding-right: calc(20px + 100% - env(titlebar-area-x,0px) - env(titlebar-area-width,100%));
+  padding-top: 10px;
+  padding-bottom: 10px;
+
+  .btn, .tab-link {
+    app-region: no-drag;
+  }
 
   .btn {
     background-color: var(--button-bg-color);
@@ -176,6 +184,7 @@ body {
   margin-bottom: 10px;
   box-shadow: var(--story-shadow);
   cursor: pointer;
+  user-select: none;
   transition: background-color 0.2s;
 
   &:hover {
@@ -312,11 +321,13 @@ body {
   text-align: center;
   padding: 20px;
   color: var(--link-color);
+  user-select: none;
 }
 
 .no-story-selected {
   font-size: 1.1em;
   margin-top: 50px;
+  user-select: none;
 }
 
 .story-placeholder, .comment-placeholder {
@@ -372,6 +383,7 @@ body {
   color: var(--button-text-color);
   transition: background-color 0.2s, border-color 0.2s, color 0.2s;
   margin-top: 10px;
+  user-select: none;
 
   &:hover {
     background-color: var(--button-hover-bg-color);

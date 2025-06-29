@@ -3,7 +3,7 @@ import { StoryItem } from './StoryItem.jsx'
 import Comments from './Comments'
 import { version } from 'refui/package.json'
 
-const App = () => {
+const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updateSW, installPrompt }) => {
 	const SECTIONS = {
 		Top: 'topstories',
 		New: 'newstories',
@@ -28,6 +28,8 @@ const App = () => {
 			document.body.classList.remove('dark-mode')
 		}
 		localStorage.setItem('darkMode', isDarkMode.value.toString())
+
+		updateThemeColor()
 	})
 
 	// --- State Signals ---
@@ -138,14 +140,50 @@ const App = () => {
 					v{version}
 				</span>
 				<button class="btn" on:click={() => fetchStoryIds(currentSection.value)} disabled={isLoading}>
-					&#x21bb;
+					&#x21bb;{/* reload */}
 				</button>
 				<button class="btn" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
-					{$(() => (isDarkMode.value ? 'Light Mode' : 'Dark Mode'))}
+					{isDarkMode.and('Light').or('Dark')}
 				</button>
-				<a href="https://github.com/ClassicOldSong/refui-hackernews-demo" target="_blank" class="btn">
-					GitHub
-				</a>
+				<If condition={installPrompt}>
+					{() => (
+						<button
+							class="btn"
+							class:active={offlineReady}
+							on:click={async () => {
+								const result = await installPrompt.value.prompt()
+								if (result.outcome === 'accepted') installPrompt.value = null
+							}}
+						>
+							Install
+						</button>
+					)}
+				</If>
+				<If condition={checkSWUpdate.and(needRefresh)}>
+					{() => (
+						<button
+							class="btn active"
+							on:click={() => {
+								if (needRefresh.value) return updateSW()
+								else checkSWUpdate.value()
+							}}
+						>
+							Update
+						</button>
+					)}
+					{() => (
+						<a
+							href="https://github.com/ClassicOldSong/refui-hackernews-demo"
+							target="_blank"
+							class="btn"
+							on:click={() => {
+								checkSWUpdate.value?.()
+							}}
+						>
+							GitHub
+						</a>
+					)}
+				</If>
 			</div>
 			<div class="main-layout">
 				<div class="story-list" style={$(() => `flex-basis: ${storyListWidth.value}%;`)}>
@@ -179,7 +217,7 @@ const App = () => {
 					</If>
 				</div>
 				<div class="resizer" on:mousedown={startDragging}></div>
-				<div class="comments-panel" style={$(() => `flex-basis: ${100 - storyListWidth.value}%;`)}>
+				<div class="comments-panel" style:flexBasis={$(() => `${100 - storyListWidth.value}%`)}>
 					<If condition={selectedStoryId}>
 						{(R) => <Comments storyData={selectedStory} storyId={selectedStoryId} />}
 						{() => <div class="no-story-selected">Select a story to view comments.</div>}
