@@ -1,4 +1,4 @@
-import { signal, For, If, $, t, watch, onDispose, derivedExtract, Render } from 'refui'
+import { signal, For, If, $, t, watch, onDispose, derivedExtract, Render, useEffect } from 'refui'
 import { Parse } from 'refui/extras/parse.js'
 import { addTargetBlankToLinks } from '../utils/dom.js'
 import { formatTime } from '../utils/time.js'
@@ -28,8 +28,12 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 		}
 		const comment = await response.json()
 
-		if (!comment || comment.dead) {
-			return () => null
+		if (!comment) {
+			return null
+		}
+
+		if (comment.dead) {
+			return (R) => <div class="comment-item deleted-comment">[moderated]</div>
 		}
 
 		if (comment.deleted) {
@@ -122,17 +126,15 @@ const Comments = ({ storyData }) => {
 	const commentsUrl = t`https://news.ycombinator.com/item?id=${id}`
 	const userUrl = t`https://news.ycombinator.com/user?id=${by}`
 
-	let currentAbortController = null
-	const cancelRequests = () => {
-		console.log('Comments unmounted or refreshed, aborting all pending requests.')
-		currentAbortController?.abort()
-	}
+	let abortController = null
 
-	onDispose(cancelRequests)
-
-	storyData.connect(() => {
-		cancelRequests()
-		currentAbortController = new AbortController()
+	useEffect(() => {
+		storyData.touch()
+		abortController = new AbortController()
+		return () => {
+			console.log('Comments unmounted or refreshed, aborting all pending requests.')
+			abortController?.abort()
+		}
 	})
 
 	return (R) => (
@@ -176,7 +178,7 @@ const Comments = ({ storyData }) => {
 											fallback={CommentFallback}
 											catch={ErrorFallback}
 											storyData={storyData}
-											abort={currentAbortController.signal}
+											abort={abortController.signal}
 											depth={0}
 										/>
 									)}

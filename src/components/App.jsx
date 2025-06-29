@@ -1,6 +1,7 @@
 import { signal, For, If, watch, $, useEffect, onDispose } from 'refui'
 import { StoryItem } from './StoryItem.jsx'
 import Comments from './Comments'
+import { version } from 'refui/package.json'
 
 const App = () => {
 	const SECTIONS = {
@@ -18,16 +19,16 @@ const App = () => {
 		return section || 'topstories'
 	}
 
-	const isDarkMode = signal(localStorage.getItem('darkMode') === 'true');
+	const isDarkMode = signal(localStorage.getItem('darkMode') === 'true')
 
 	watch(() => {
 		if (isDarkMode.value) {
-			document.body.classList.add('dark-mode');
+			document.body.classList.add('dark-mode')
 		} else {
-			document.body.classList.remove('dark-mode');
+			document.body.classList.remove('dark-mode')
 		}
-		localStorage.setItem('darkMode', isDarkMode.value.toString());
-	});
+		localStorage.setItem('darkMode', isDarkMode.value.toString())
+	})
 
 	// --- State Signals ---
 	const allStoryIds = signal([]) // Stores all fetched story IDs for the current section
@@ -36,30 +37,30 @@ const App = () => {
 	const isLoading = signal(false)
 	const selectedStory = signal()
 	const selectedStoryId = signal(null)
-	const storyListWidth = signal(parseFloat(localStorage.getItem('storyListWidth') || '30'));
+	const storyListWidth = signal(parseFloat(localStorage.getItem('storyListWidth') || '30'))
 
 	watch(() => {
-		localStorage.setItem('storyListWidth', storyListWidth.value.toString());
-	});
+		localStorage.setItem('storyListWidth', storyListWidth.value.toString())
+	})
 
 	const startDragging = (e) => {
-		e.preventDefault();
-		const startX = e.clientX;
-		const startWidth = storyListWidth.value;
+		e.preventDefault()
+		const startX = e.clientX
+		const startWidth = storyListWidth.value
 
 		const doDrag = (e) => {
-			const newWidth = startWidth + ((e.clientX - startX) / window.innerWidth) * 100;
-			storyListWidth.value = Math.max(20, Math.min(80, newWidth)); // Clamp between 20% and 80%
-		};
+			const newWidth = startWidth + ((e.clientX - startX) / window.innerWidth) * 100
+			storyListWidth.value = Math.max(20, Math.min(80, newWidth)) // Clamp between 20% and 80%
+		}
 
 		const stopDrag = () => {
-			window.removeEventListener('mousemove', doDrag);
-			window.removeEventListener('mouseup', stopDrag);
-		};
+			window.removeEventListener('mousemove', doDrag)
+			window.removeEventListener('mouseup', stopDrag)
+		}
 
-		window.addEventListener('mousemove', doDrag);
-		window.addEventListener('mouseup', stopDrag);
-	};
+		window.addEventListener('mousemove', doDrag)
+		window.addEventListener('mouseup', stopDrag)
+	}
 
 	// Derived signal for stories currently displayed
 	const storyIds = $(() => allStoryIds.value.slice(0, storiesLimit.value))
@@ -91,7 +92,7 @@ const App = () => {
 
 		try {
 			const response = await fetch(`https://hacker-news.firebaseio.com/v0/${section}.json`, {
-				signal: abort,
+				signal: abort
 			})
 			const ids = await response.json()
 			allStoryIds.value = ids
@@ -108,23 +109,14 @@ const App = () => {
 	}
 
 	let abortController = null
-	const cancelRequests = () => {
-		console.log('App component unmounted or refreshed, aborting all pending requests.')
-		abortController?.abort()
-	}
-	onDispose(cancelRequests)
 
 	// --- Initial Setup & Reactivity ---
 	useEffect(() => {
 		abortController = new AbortController()
-		const dispose = watch(() => {
-			abortController.abort()
-			abortController = new AbortController()
-			fetchStoryIds(currentSection.value, abortController.signal)
-		})
+		fetchStoryIds(currentSection.value, abortController.signal)
 		return () => {
+			console.log('App component unmounted or refreshed, aborting all pending requests.')
 			abortController.abort()
-			dispose()
 		}
 	})
 
@@ -137,7 +129,15 @@ const App = () => {
 						{name}
 					</button>
 				))}
-				<button class="refresh-btn btn" on:click={() => fetchStoryIds(currentSection.value)} disabled={isLoading}>
+				<span class="tab-spacer" />
+				<span>
+					Proudly made with{' '}
+					<a href="https://github.com/SudoMaker/rEFui" target="_blank" class="tab-link">
+						rEFui
+					</a>{' '}
+					v{version}
+				</span>
+				<button class="btn" on:click={() => fetchStoryIds(currentSection.value)} disabled={isLoading}>
 					&#x21bb;
 				</button>
 				<button class="btn" on:click={() => (isDarkMode.value = !isDarkMode.value)}>

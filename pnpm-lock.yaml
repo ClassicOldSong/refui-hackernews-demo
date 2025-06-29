@@ -9,12 +9,12 @@ importers:
   .:
     dependencies:
       refui:
-        specifier: ^0.4.2
-        version: 0.4.2
+        specifier: ^0.4.4
+        version: 0.4.4
     devDependencies:
       refurbish:
         specifier: ^0.1.4
-        version: 0.1.4(refui@0.4.2)(rollup@4.44.1)
+        version: 0.1.4(refui@0.4.4)(rollup@4.44.1)
       vite:
         specifier: ^7.0.0
         version: 7.0.0
@@ -320,8 +320,8 @@ packages:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
 
-  refui@0.4.2:
-    resolution: {integrity: sha512-Ou8oaH6y212X5ZvHUU0KlhauB0P2h7+6yqoz16y2Xd/doz/eTpSGBuZEVOyK7gmJX4F+Mmt2VrXJa9i+Xy9l4A==}
+  refui@0.4.4:
+    resolution: {integrity: sha512-JOUqppnZ6NhXMkfrlnkFLFNmeYab5PrhovNwhc3VuTrltYaEjokq+vCg5r0oDJNZ5myqvyyMtvDXiiwo6Nw0Rg==}
 
   refurbish@0.1.4:
     resolution: {integrity: sha512-9+wkIMPu6bEsmgOdOnOSaRB4jphIhecG52sIk4LpMExMRIFLJSy+Vg8TYOvnI9AxGU7W2CCjUtgq3cRqGO2BwA==}
@@ -577,12 +577,12 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  refui@0.4.2: {}
+  refui@0.4.4: {}
 
-  refurbish@0.1.4(refui@0.4.2)(rollup@4.44.1):
+  refurbish@0.1.4(refui@0.4.4)(rollup@4.44.1):
     dependencies:
       '@rollup/pluginutils': 5.2.0(rollup@4.44.1)
-      refui: 0.4.2
+      refui: 0.4.4
     transitivePeerDependencies:
       - rollup
 
