@@ -2,7 +2,7 @@
 
 This is a demonstration project showcasing the capabilities of the [rEFui](https://github.com/SudoMaker/refui) JavaScript library for building reactive user interfaces. It's a simple, yet functional, Hacker News client built with rEFui and Vite.
 
-[Live Demo](https://stackblitz.com/~/github.com/ClassicOldSong/refui-hackernews-demo)
+[Live Demo](https://hnreader.netlify.app/#topstories)
 
 ## Features
 
