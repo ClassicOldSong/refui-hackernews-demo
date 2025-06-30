@@ -63,9 +63,10 @@ const load = async (storyId, abort) => {
 	return story
 }
 
-const StoryItem = ({ storyId, onSelect, isSelected, abort, refreshSignal }) => {
+const StoryItem = ({ storyId, onSelect, match, abort, refreshSignal }) => {
 	const state = signal('')
 	const storySignal = signal({})
+	const isSelected = match(storyId)
 	let error = null
 
 	const reload = async () => {
@@ -81,6 +82,7 @@ const StoryItem = ({ storyId, onSelect, isSelected, abort, refreshSignal }) => {
 			const newStory = await load(storyId, abort)
 			if (!newStory) {
 				state.value = ''
+				return
 			}
 			if (peek(isSelected)) {
 				onSelect(newStory)

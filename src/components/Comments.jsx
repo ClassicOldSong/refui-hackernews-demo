@@ -1,4 +1,4 @@
-import { signal, For, If, $, t, watch, onDispose, derivedExtract, Render, useEffect } from 'refui'
+import { signal, For, If, $, t, watch, onDispose, derivedExtract, Render, useEffect, readAll } from 'refui'
 import { Parse } from 'refui/extras/parse.js'
 import { addTargetBlankToLinks } from '../utils/dom.js'
 import { formatTime } from '../utils/time.js'
@@ -126,8 +126,7 @@ const Comments = ({ storyData }) => {
 	)
 
 	const comments = $(() => {
-		const _kids = kids.value
-		const _commentsToShow = commentsToShow.value
+		const [_kids, _commentsToShow] = readAll(kids, commentsToShow)
 		return _kids?.slice(0, _commentsToShow) || []
 	})
 

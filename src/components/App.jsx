@@ -1,4 +1,4 @@
-import { signal, For, If, watch, $, useEffect, onDispose } from 'refui'
+import { signal, For, If, watch, $, useEffect, onDispose, onCondition } from 'refui'
 import { StoryItem } from './StoryItem.jsx'
 import Comments from './Comments'
 import { version } from 'refui/package.json'
@@ -41,6 +41,8 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	const selectedStoryId = signal(null)
 	const storyListWidth = signal(parseFloat(localStorage.getItem('storyListWidth') || '30'))
 	const refreshSignal = signal()
+
+	const matchStoryId = onCondition(selectedStoryId)
 
 	watch(() => {
 		localStorage.setItem('storyListWidth', storyListWidth.value.toString())
@@ -203,7 +205,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 									selectedStoryId.value = story.id
 									selectedStory.value = story
 								}}
-								isSelected={selectedStoryId.eq(storyId)}
+								match={matchStoryId}
 								abort={abortController.signal}
 								refreshSignal={refreshSignal}
 							/>
