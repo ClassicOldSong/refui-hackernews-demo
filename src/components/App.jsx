@@ -40,6 +40,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	const selectedStory = signal()
 	const selectedStoryId = signal(null)
 	const storyListWidth = signal(parseFloat(localStorage.getItem('storyListWidth') || '30'))
+	const refreshSignal = signal()
 
 	watch(() => {
 		localStorage.setItem('storyListWidth', storyListWidth.value.toString())
@@ -89,21 +90,22 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	async function fetchStoryIds(section, abort) {
 		if (!section) return
 		isLoading.value = true
-		allStoryIds.value = [] // Clear previous stories
-		storiesLimit.value = 30 // Reset limit when fetching new section
 
 		try {
 			const response = await fetch(`https://hacker-news.firebaseio.com/v0/${section}.json`, {
 				signal: abort
 			})
 			const ids = await response.json()
+			if (ids[0] !== allStoryIds.value[0]) {
+				storiesLimit.value = 30
+			}
 			allStoryIds.value = ids
+			refreshSignal.trigger()
 		} catch (error) {
 			if (error.name === 'AbortError') {
 				console.log('Fetch aborted for story IDs:', section)
 			} else {
 				console.error(`Error fetching ${section} story IDs:`, error)
-				allStoryIds.value = [] // Clear stories on error
 			}
 		} finally {
 			isLoading.value = false
@@ -116,6 +118,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	useEffect(() => {
 		abortController = new AbortController()
 		fetchStoryIds(currentSection.value, abortController.signal)
+		allStoryIds.value = []
 		return () => {
 			console.log('App component unmounted or refreshed, aborting all pending requests.')
 			abortController.abort()
@@ -139,7 +142,9 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 					</a>{' '}
 					v{version}
 				</span>
-				<button class="btn" on:click={() => fetchStoryIds(currentSection.value)} disabled={isLoading}>
+				<button class="btn" on:click={() => {
+					fetchStoryIds(currentSection.value, abortController.signal)
+				}} disabled={isLoading}>
 					&#x21bb;{/* reload */}
 				</button>
 				<button class="btn" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
@@ -189,30 +194,26 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				<div class="story-list" style={$(() => `flex-basis: ${storyListWidth.value}%;`)}>
 					<If condition={isLoading}>
 						{() => <div class="loading">Loading story list...</div>}
+					</If>
+					<For entries={storyIds}>
+						{({ item: storyId }) => (
+							<StoryItem
+								storyId={storyId}
+								onSelect={(story) => {
+									selectedStoryId.value = story.id
+									selectedStory.value = story
+								}}
+								isSelected={selectedStoryId.eq(storyId)}
+								abort={abortController.signal}
+								refreshSignal={refreshSignal}
+							/>
+						)}
+					</For>
+					<If condition={$(() => storyIds.value.length < allStoryIds.value.length)}>
 						{() => (
-							<>
-								<For entries={storyIds}>
-									{({ item: storyId }) => (
-										<StoryItem
-											storyId={storyId}
-											onSelect={(story) => {
-												selectedStoryId.value = story.id
-												selectedStory.value = story
-											}}
-											isSelected={selectedStoryId.eq(storyId)}
-											catch={({ error }) => <div class="story-error">Error: {error.message}</div>}
-											abort={abortController.signal}
-										/>
-									)}
-								</For>
-								<If condition={$(() => storyIds.value.length < allStoryIds.value.length)}>
-									{() => (
-										<button class="load-more-btn" on:click={() => (storiesLimit.value += 30)} disabled={isLoading}>
-											Load More
-										</button>
-									)}
-								</If>
-							</>
+							<button class="load-more-btn" on:click={() => (storiesLimit.value += 30)} disabled={isLoading}>
+								Load More
+							</button>
 						)}
 					</If>
 				</div>

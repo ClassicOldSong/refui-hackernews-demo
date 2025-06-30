@@ -45,7 +45,11 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 
 		const commentsPerPage = 5
 		const commentsToShow = signal(depth >= MAX_DEPTH ? 0 : commentsPerPage)
-		const childComments = $(() => comment.kids?.slice(0, commentsToShow.value) || [])
+		const childComments = $(() => {
+			const _kids = comment.kids
+			const _commentsToShow = commentsToShow.value
+			return _kids?.slice(0, _commentsToShow) || []
+		})
 
 		if (depth >= MAX_DEPTH) {
 			depth = 0
@@ -121,15 +125,23 @@ const Comments = ({ storyData }) => {
 		'time'
 	)
 
-	const comments = $(() => kids.value?.slice(0, commentsToShow.value) || [])
+	const comments = $(() => {
+		const _kids = kids.value
+		const _commentsToShow = commentsToShow.value
+		return _kids?.slice(0, _commentsToShow) || []
+	})
 
 	const commentsUrl = t`https://news.ycombinator.com/item?id=${id}`
 	const userUrl = t`https://news.ycombinator.com/user?id=${by}`
 
 	let abortController = null
+	let lastId = id.peek()
 
 	useEffect(() => {
-		storyData.touch()
+		if (lastId !== storyData.value.id) {
+			commentsToShow.value = commentsPerPage
+			lastId = storyData.value.id
+		}
 		abortController = new AbortController()
 		return () => {
 			console.log('Comments unmounted or refreshed, aborting all pending requests.')
@@ -146,7 +158,7 @@ const Comments = ({ storyData }) => {
 					</a>
 				</h3>
 				<div class="story-meta">
-					{score} points by{' '}
+					{score} point{$(() => score.value === 1 ? '' : 's')} by{' '}
 					<a href={userUrl} target="_blank">
 						{by}
 					</a>
@@ -155,7 +167,7 @@ const Comments = ({ storyData }) => {
 						{descendants} comments
 					</a>
 					{' | '}
-					<span class="time">{$(() => formatTime(time.value))}</span>
+					<span class="time">{formatTime(time)}</span>
 				</div>
 				<If condition={text}>
 					{() => (

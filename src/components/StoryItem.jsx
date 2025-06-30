@@ -1,4 +1,4 @@
-import { onDispose } from 'refui'
+import { onDispose, peek, signal, $, touch, derivedExtract, Fn, watch } from 'refui'
 import { formatTime } from '../utils/time.js'
 
 const StoryFallback = () => (R) => (
@@ -12,55 +12,118 @@ const StoryFallback = () => (R) => (
 	</div>
 )
 
-const Story = async ({ storyId, onSelect, isSelected, abort }) => {
-	try {
-		const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${storyId}.json`, { signal: abort })
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`)
-		}
-		const story = await response.json()
+const StoryError =
+	({ error }) =>
+	(R) => <div class="story-error">Error: {error.message}</div>
 
-		// Don't render anything if the story is deleted, dead, or missing a title
-		if (!story || story.deleted || story.dead || !story.title) {
-			return () => null
-		}
+const Story = ({ story, isSelected, onSelect }) => {
+	const { score, descendants } = derivedExtract(
+		story,
+		'score',
+		'descendants'
+	)
+	const { id, by, url, title, time } = story.value
 
-		const commentsUrl = `https://news.ycombinator.com/item?id=${story.id}`
-		const userUrl = `https://news.ycombinator.com/user?id=${story.by}`
-
-		// This is the render function that will be used once the promise resolves
-		return (R) => (
-			<div class="story" class:selected={isSelected} on:click={() => onSelect(story)}>
-				<div class="story-title">
-					<a href={story.url || commentsUrl} target="_blank" rel="noopener noreferrer">
-						{story.title}
-					</a>
-				</div>
-				<div class="story-meta">
-					{story.score} points by{' '}
-					<a href={userUrl} target="_blank">
-						{story.by}
-					</a>{' '}
-					|{' '}
-					<a href={commentsUrl} target="_blank">
-						{story.descendants || 0} comments
-					</a>{' '}
-					| <span class="time">{formatTime(story.time)}</span>
-				</div>
+	const commentsUrl = `https://news.ycombinator.com/item?id=${id}`
+	const userUrl = `https://news.ycombinator.com/user?id=${by}`
+	return (R) => (
+		<div class="story" class:selected={isSelected} on:click={() => onSelect(story.value)}>
+			<div class="story-title">
+				<a href={url || commentsUrl} target="_blank" rel="noopener noreferrer">
+					{title}
+				</a>
 			</div>
-		)
-	} catch (error) {
-		if (error.name === 'AbortError') {
-			console.log('Fetch aborted for Story:', storyId)
-			return () => null // Return a render function that renders nothing
-		} else {
-			throw error // Re-throw other errors
-		}
-	}
+			<div class="story-meta">
+				{score} point{$(() => (score.value === 1 ? '' : 's'))} by{' '}
+				<a href={userUrl} target="_blank">
+					{by}
+				</a>{' '}
+				|{' '}
+				<a href={commentsUrl} target="_blank">
+					{$(() => descendants.value || 0)} comments
+				</a>{' '}
+				| <span class="time">{formatTime(time)}</span>
+			</div>
+		</div>
+	)
 }
 
-const StoryItem = ({ ...args }) => {
-	return (R) => <Story {...args} fallback={StoryFallback} />
+const load = async (storyId, abort) => {
+	const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${storyId}.json`, { signal: abort })
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`)
+	}
+	const story = await response.json()
+
+	// Don't render anything if the story is deleted, dead, or missing a title
+	if (!story || story.deleted || story.dead || !story.title) {
+		return null
+	}
+
+	return story
+}
+
+const StoryItem = ({ storyId, onSelect, isSelected, abort, refreshSignal }) => {
+	const state = signal('')
+	const storySignal = signal({})
+	let error = null
+
+	const reload = async () => {
+		touch(refreshSignal)
+		if (peek(state) === 'loading') {
+			return
+		}
+		if (error || !peek(state)) {
+			state.value = 'loading'
+			error = null
+		}
+		try {
+			const newStory = await load(storyId, abort)
+			if (!newStory) {
+				state.value = ''
+			}
+			if (peek(isSelected)) {
+				onSelect(newStory)
+			}
+			storySignal.value = newStory
+			state.value = 'ready'
+		} catch (err) {
+			if (err.name === 'AbortError') {
+				console.log('Fetch aborted for Story:', storyId)
+				state.value = 'aborted'
+			} else {
+				error = err
+				state.value = 'error'
+			}
+		}
+	}
+
+	watch(reload)
+
+	return (R) => {
+		const renderStory = () => <Story story={storySignal} isSelected={isSelected} onSelect={onSelect} />
+		return (
+			<Fn>
+				{() => {
+					switch (state.value) {
+						case 'loading': {
+							return () => <StoryFallback />
+						}
+						case 'ready': {
+							return renderStory
+						}
+						case 'error': {
+							return () => <StoryError error={error} />
+						}
+						case 'aborted':
+						default: {
+							return null
+						}
+					}
+				}}
+			</Fn>
+		)
+	}
 }
 
 export { StoryItem }

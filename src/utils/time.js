@@ -1,6 +1,14 @@
-export function formatTime(timestamp) {
-	const now = new Date();
-	const past = new Date(timestamp * 1000);
+import { signal, $, read } from 'refui'
+
+const _now = signal(new Date())
+
+setInterval(() => {
+	_now.value = new Date()
+}, 1000)
+
+function _formatTime(timestamp) {
+	const now = _now.value;
+	const past = new Date(read(timestamp) * 1000);
 	const diffInSeconds = Math.floor((now - past) / 1000);
 
 	if (diffInSeconds < 60) {
@@ -19,4 +27,8 @@ export function formatTime(timestamp) {
 
 	const diffInDays = Math.floor(diffInHours / 24);
 	return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
+}
+
+export function formatTime(timestamp) {
+	return $(() => _formatTime(timestamp))
 }
