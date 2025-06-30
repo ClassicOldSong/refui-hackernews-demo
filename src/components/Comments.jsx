@@ -163,7 +163,7 @@ const Comments = ({ storyData }) => {
 					</a>
 					{' | '}
 					<a href={commentsUrl} target="_blank">
-						{descendants} comments
+						{descendants} comment{$(() => descendants.value === 1 ? '' : 's')}
 					</a>
 					{' | '}
 					<span class="time">{formatTime(time)}</span>

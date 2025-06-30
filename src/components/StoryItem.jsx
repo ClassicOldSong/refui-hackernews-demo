@@ -40,7 +40,7 @@ const Story = ({ story, isSelected, onSelect }) => {
 				</a>{' '}
 				|{' '}
 				<a href={commentsUrl} target="_blank">
-					{$(() => descendants.value || 0)} comments
+					{descendants} comment{$(() => descendants.value === 1 ? '' : 's')}
 				</a>{' '}
 				| <span class="time">{formatTime(time)}</span>
 			</div>
