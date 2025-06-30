@@ -60,21 +60,6 @@ pnpm build
 
 The optimized files will be located in the `dist/` directory. You can preview the production build with `pnpm preview`.
 
-## Project Structure
-
-```
-/
-├── src/
-│   ├── components/         # rEFui components (App, StoryItem, Comments)
-│   ├── utils/              # Utility functions
-│   ├── main.js             # Application entry point
-│   └── style.css           # Main stylesheet
-├── public/                 # Static assets
-├── index.html              # HTML entry point
-├── vite.config.js          # Vite configuration
-└── package.json            # Project dependencies and scripts
-```
-
 ## rEFui Concepts Illustrated
 
 This project serves as a practical example for several core rEFui concepts:

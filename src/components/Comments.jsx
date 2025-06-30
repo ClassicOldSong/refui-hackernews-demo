@@ -2,6 +2,7 @@ import { signal, For, If, $, t, watch, onDispose, derivedExtract, Render, useEff
 import { Parse } from 'refui/extras/parse.js'
 import { addTargetBlankToLinks } from '../utils/dom.js'
 import { formatTime } from '../utils/time.js'
+import { addS } from '../utils/misc.js'
 
 const CommentFallback = () => (R) => (
 	<div class="comment-item comment-placeholder">
@@ -157,13 +158,13 @@ const Comments = ({ storyData }) => {
 					</a>
 				</h3>
 				<div class="story-meta">
-					{score} point{$(() => score.value === 1 ? '' : 's')} by{' '}
+					{score} point{addS(score)} by{' '}
 					<a href={userUrl} target="_blank">
 						{by}
 					</a>
 					{' | '}
 					<a href={commentsUrl} target="_blank">
-						{descendants} comment{$(() => descendants.value === 1 ? '' : 's')}
+						{descendants} comment{addS(descendants)}
 					</a>
 					{' | '}
 					<span class="time">{formatTime(time)}</span>

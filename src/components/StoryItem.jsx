@@ -1,5 +1,6 @@
 import { onDispose, peek, signal, $, touch, derivedExtract, Fn, watch } from 'refui'
 import { formatTime } from '../utils/time.js'
+import { addS } from '../utils/misc.js'
 
 const StoryFallback = () => (R) => (
 	<div class="story story-placeholder">
@@ -34,13 +35,13 @@ const Story = ({ story, isSelected, onSelect }) => {
 				</a>
 			</div>
 			<div class="story-meta">
-				{score} point{$(() => (score.value === 1 ? '' : 's'))} by{' '}
+				{score} point{addS(score)} by{' '}
 				<a href={userUrl} target="_blank">
 					{by}
 				</a>{' '}
 				|{' '}
 				<a href={commentsUrl} target="_blank">
-					{descendants} comment{$(() => descendants.value === 1 ? '' : 's')}
+					{descendants} comment{addS(descendants)}
 				</a>{' '}
 				| <span class="time">{formatTime(time)}</span>
 			</div>
