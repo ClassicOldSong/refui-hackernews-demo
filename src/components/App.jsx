@@ -137,16 +137,20 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 					</button>
 				))}
 				<span class="tab-spacer" />
-				<span>
+				<span class="hide-on-small-screen">
 					Proudly made with{' '}
 					<a href="https://github.com/SudoMaker/rEFui" target="_blank" class="tab-link">
 						rEFui
 					</a>{' '}
 					v{version}
 				</span>
-				<button class="btn" on:click={() => {
-					fetchStoryIds(currentSection.value, abortController.signal)
-				}} disabled={isLoading}>
+				<button
+					class="btn"
+					on:click={() => {
+						fetchStoryIds(currentSection.value, abortController.signal)
+					}}
+					disabled={isLoading}
+				>
 					&#x21bb;{/* reload */}
 				</button>
 				<button class="btn" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
@@ -194,9 +198,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 			</div>
 			<div class="main-layout">
 				<div class="story-list" style={$(() => `flex-basis: ${storyListWidth.value}%;`)}>
-					<If condition={isLoading}>
-						{() => <div class="loading">Loading story list...</div>}
-					</If>
+					<If condition={isLoading}>{() => <div class="loading">Loading story list...</div>}</If>
 					<For entries={storyIds}>
 						{({ item: storyId }) => (
 							<StoryItem

@@ -427,3 +427,9 @@ body {
 .dark-mode ::-webkit-scrollbar-thumb:hover {
   background: #777;
 }
+
+@media (max-width: 1366px) {
+  .hide-on-small-screen {
+    display: none;
+  }
+}

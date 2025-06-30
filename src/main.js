@@ -61,6 +61,4 @@ const updateThemeColor = () => {
 	}
 }
 
-
 renderer.render(root, App, { updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updateSW, installPrompt });
-

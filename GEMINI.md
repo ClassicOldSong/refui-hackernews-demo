@@ -2,7 +2,27 @@ rEFui is a **retained mode** renderer, you need to understand its difference wit
 
 For this project, the DOM renderer and Browser preset is used.
 
-Follow the code style in @.editorconfig .
+Follow the code style in @.editorconfig :
+
+```ini
+[*]
+charset = utf-8
+indent_style = tab
+indent_size = 2
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[package.json]
+indent_style = space
+
+[.eslintrc]
+indent_style = space
+
+[.prettierrc]
+indent_style = space
+```
+
 
 **Important Notes for this Project:**
 *   **Retained Mode Rendering:** rEFui directly manages the DOM based on state, unlike virtual DOM libraries.
