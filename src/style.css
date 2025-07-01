@@ -316,6 +316,7 @@ body {
   .comment-text a,
   .story-text a {
     color: #61afef; /* A readable blue for links in dark mode */
+    word-wrap: break-word;
     &:hover {
       text-decoration: underline;
     }
