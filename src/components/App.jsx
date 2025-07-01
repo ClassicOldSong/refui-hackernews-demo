@@ -43,11 +43,30 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	const refreshSignal = signal()
 	const isSmallScreen = signal(window.innerWidth < 768)
 	const menuVisible = signal(false)
+	const menuRef = signal(null)
+	const menuBtnRef = signal(null)
 
 	const matchStoryId = onCondition(selectedStoryId)
 
 	watch(() => {
 		localStorage.setItem('storyListWidth', storyListWidth.value.toString())
+	})
+
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (
+				menuRef.value &&
+				!menuRef.value.contains(event.target) &&
+				!menuBtnRef.value.contains(event.target)
+			) {
+				menuVisible.value = false
+			}
+		}
+
+		document.addEventListener('mousedown', handleClickOutside)
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside)
+		}
 	})
 
 	const startDragging = (e) => {
@@ -159,9 +178,20 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		<>
 			<div class="tabs">
 				<h1 class="page-title">HackerNews</h1>
-				<div class:visible={menuVisible} class="collapsible-menu">
+				<div $ref={menuRef} class:visible={menuVisible} class="collapsible-menu">
 					<Sections />
+					<a
+						href="https://github.com/ClassicOldSong/refui-hackernews-demo"
+						target="_blank"
+						class="btn"
+						on:click={() => {
+							checkSWUpdate.value?.()
+						}}
+					>
+						GitHub
+					</a>
 				</div>
+				<div class="overlay" class:visible={menuVisible} on:click={() => (menuVisible.value = false)}></div>
 				<div class="nav-buttons">
 					<Sections />
 				</div>
@@ -215,7 +245,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 						<a
 							href="https://github.com/ClassicOldSong/refui-hackernews-demo"
 							target="_blank"
-							class="btn"
+							class="btn hide-on-small-screen"
 							on:click={() => {
 								checkSWUpdate.value?.()
 							}}
@@ -224,9 +254,22 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 						</a>
 					)}
 				</If>
-				<button class="btn menu-btn" on:click={() => (menuVisible.value = !menuVisible.value)}>
-					☰
-				</button>
+				<If condition={selectedStoryId.and(isSmallScreen)}>
+					{() => (
+						<button class="btn back-btn hide-on-large-screen" on:click={() => (selectedStoryId.value = null)}>
+							←
+						</button>
+					)}
+					{() => (
+						<button
+							$ref={menuBtnRef}
+							class="btn menu-btn"
+							on:click={() => (menuVisible.value = !menuVisible.value)}
+						>
+							☰
+						</button>
+					)}
+				</If>
 			</div>
 			<div class="main-layout" class:show-comments={selectedStoryId.and(isSmallScreen)}>
 				<div class="story-list" style={$(() => `flex-basis: ${storyListWidth.value}%;`)}>
