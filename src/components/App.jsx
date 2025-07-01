@@ -41,6 +41,8 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	const selectedStoryId = signal(null)
 	const storyListWidth = signal(parseFloat(localStorage.getItem('storyListWidth') || '30'))
 	const refreshSignal = signal()
+	const isSmallScreen = signal(window.innerWidth < 768)
+	const menuVisible = signal(false)
 
 	const matchStoryId = onCondition(selectedStoryId)
 
@@ -85,7 +87,16 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 			currentSection.value = getSectionFromHash()
 		}
 		window.addEventListener('hashchange', hashChangeEffect)
-		return () => window.removeEventListener('hashchange', hashChangeEffect)
+		const mediaQuery = window.matchMedia('(max-width: 768px)')
+		const mediaQueryChange = (e) => {
+			isSmallScreen.value = e.matches
+		}
+		mediaQuery.addEventListener('change', mediaQueryChange)
+
+		return () => {
+			window.removeEventListener('hashchange', hashChangeEffect)
+			mediaQuery.removeEventListener('change', mediaQueryChange)
+		}
 	})
 
 	// --- Data Fetching ---
@@ -127,15 +138,33 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		}
 	})
 
+	const Sections = () => (R) => (
+		<>
+			{Object.entries(SECTIONS).map(([name, value]) => (
+				<button
+					class="btn"
+					class:active={currentSection.eq(value)}
+					on:click={() => {
+						currentSection.value = value
+						menuVisible.value = false
+					}}
+				>
+					{name}
+				</button>
+			))}
+		</>
+	)
+
 	return (R) => (
 		<>
 			<div class="tabs">
 				<h1 class="page-title">HackerNews</h1>
-				{Object.entries(SECTIONS).map(([name, value]) => (
-					<button class="btn" class:active={currentSection.eq(value)} on:click={() => (currentSection.value = value)}>
-						{name}
-					</button>
-				))}
+				<div class:visible={menuVisible} class="collapsible-menu">
+					<Sections />
+				</div>
+				<div class="nav-buttons">
+					<Sections />
+				</div>
 				<span class="tab-spacer" />
 				<span class="hide-on-small-screen">
 					Proudly made with{' '}
@@ -195,8 +224,11 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 						</a>
 					)}
 				</If>
+				<button class="btn menu-btn" on:click={() => (menuVisible.value = !menuVisible.value)}>
+					☰
+				</button>
 			</div>
-			<div class="main-layout">
+			<div class="main-layout" class:show-comments={selectedStoryId.and(isSmallScreen)}>
 				<div class="story-list" style={$(() => `flex-basis: ${storyListWidth.value}%;`)}>
 					<If condition={isLoading}>{() => <div class="loading">Loading story list...</div>}</If>
 					<For entries={storyIds}>
@@ -224,7 +256,13 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				<div class="resizer" on:mousedown={startDragging}></div>
 				<div class="comments-panel" style:flexBasis={$(() => `${100 - storyListWidth.value}%`)}>
 					<If condition={selectedStoryId}>
-						{(R) => <Comments storyData={selectedStory} storyId={selectedStoryId} />}
+						{(R) => (
+							<Comments
+								storyData={selectedStory}
+								storyId={selectedStoryId}
+								onBack={() => (selectedStoryId.value = null)}
+							/>
+						)}
 						{() => <div class="no-story-selected">Select a story to view comments.</div>}
 					</If>
 				</div>

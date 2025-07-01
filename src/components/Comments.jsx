@@ -109,7 +109,7 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 	}
 }
 
-const Comments = ({ storyData }) => {
+const Comments = ({ storyData, onBack }) => {
 	const commentsPerPage = 5
 	const commentsToShow = signal(commentsPerPage)
 	const isLoadingComments = signal(false)
@@ -152,6 +152,7 @@ const Comments = ({ storyData }) => {
 	return (R) => (
 		<div class="comments-container">
 			<div class="comments-header">
+				<button class="btn back-btn" on:click={onBack}>← Back</button>
 				<h3>
 					<a href={url} target="_blank">
 						{title}
