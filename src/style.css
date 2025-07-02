@@ -58,6 +58,10 @@
   --error-text: #ff6666;
 }
 
+* {
+	box-sizing: border-box;
+}
+
 /* General styles */
 body {
   font-family: var(--font-family);
@@ -308,14 +312,16 @@ body {
   font-size: 0.9em;
   line-height: 1.5;
 
-  a {
-    word-wrap: break-word;
-  }
 
   pre {
     white-space: pre-wrap;
-    word-wrap: break-word;
   }
+}
+
+.comment-text, .story-text {
+	a, pre {
+		word-wrap: break-word;
+	}
 }
 
 .dark-mode {
@@ -556,5 +562,14 @@ body {
 		margin: 0;
 		border-top: 0;
 	}
+
+  .comment-item {
+  	padding-left: 4px;
+  	padding-right: 4px;
+	  .comment-children {
+	    padding-left: 2px;
+	    /* border-radius: 5px 5px 5px 5px; */
+	  }
+  }
 }
 
