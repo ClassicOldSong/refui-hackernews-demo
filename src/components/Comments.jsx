@@ -204,7 +204,7 @@ const Comments = ({ storyId, initialStoryData }) => {
 												</a>
 												{' | '}
 												<a href={commentsUrl} target="_blank">
-													{descendants} comment{addS(descendants)}
+													{$(() => descendants.value || '0')} comment{addS(descendants)}
 												</a>
 												{' | '}
 												<span class="time">{formatTime(time)}</span>

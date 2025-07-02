@@ -18,11 +18,7 @@ const StoryError =
 	(R) => <div class="story-error">Error: {error.message}</div>
 
 const Story = ({ story, isSelected, onSelect }) => {
-	const { score, descendants } = derivedExtract(
-		story,
-		'score',
-		'descendants'
-	)
+	const { score, descendants } = derivedExtract(story, 'score', 'descendants')
 	const { id, by, url, title, time } = story.value
 
 	const commentsUrl = `https://news.ycombinator.com/item?id=${id}`
@@ -30,9 +26,9 @@ const Story = ({ story, isSelected, onSelect }) => {
 	return (R) => (
 		<div class="story" class:selected={isSelected} on:click={() => onSelect(story.value)}>
 			<div class="story-title">
-				<a href={url || commentsUrl} target="_blank" rel="noopener noreferrer">
-					{title}
-				</a>
+				{/*<a href={url || commentsUrl} target="_blank" rel="noopener noreferrer">*/}
+				{title}
+				{/*</a>*/}
 			</div>
 			<div class="story-meta">
 				{score} point{addS(score)} by{' '}
@@ -41,7 +37,7 @@ const Story = ({ story, isSelected, onSelect }) => {
 				</a>{' '}
 				|{' '}
 				<a href={commentsUrl} target="_blank">
-					{descendants} comment{addS(descendants)}
+					{$(() => descendants.value || '0')} comment{addS(descendants)}
 				</a>{' '}
 				| <span class="time">{formatTime(time)}</span>
 			</div>

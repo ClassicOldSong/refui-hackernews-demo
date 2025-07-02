@@ -256,6 +256,9 @@ body {
     a {
       color: var(--active-color);
       text-decoration: none;
+      &:hover {
+      	text-decoration: underline;
+      }
     }
   }
 }

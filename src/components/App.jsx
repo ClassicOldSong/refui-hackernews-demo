@@ -35,12 +35,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 
 		if (parts.length === 1 && SECTIONS[parts[0]]) {
 			section = parts[0]
-		} else if (
-			parts.length === 3 &&
-			SECTIONS[parts[0]] &&
-			parts[1] === 'story' &&
-			!isNaN(parseInt(parts[2], 10))
-		) {
+		} else if (parts.length === 3 && SECTIONS[parts[0]] && parts[1] === 'story' && !isNaN(parseInt(parts[2], 10))) {
 			section = parts[0]
 			storyId = parseInt(parts[2], 10)
 		} else if (parts.length === 2 && parts[0] === 'story' && !isNaN(parseInt(parts[1], 10))) {
