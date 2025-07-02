@@ -105,12 +105,10 @@ body {
 }
 
 .story-list {
-  min-width: 300px;
   padding-right: 10px;
 }
 
 .comments-panel {
-  min-width: 400px;
   border-left: 1px solid var(--border-color);
   padding-left: 10px;
   padding-right: 10px;
@@ -310,6 +308,10 @@ body {
   font-size: 0.9em;
   line-height: 1.5;
 
+  a {
+    word-wrap: break-word;
+  }
+
   pre {
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -320,7 +322,6 @@ body {
   .comment-text a,
   .story-text a {
     color: #61afef; /* A readable blue for links in dark mode */
-    word-wrap: break-word;
     &:hover {
       text-decoration: underline;
     }
@@ -454,15 +455,11 @@ body {
 	display: none;
 }
 
-.menu-btn {
-	display: none;
-}
-
 .collapsible-menu {
 	display: none;
 }
 
-.menu-btn.hidden {
+.hidden {
 	display: none;
 }
 
@@ -498,10 +495,6 @@ body {
 
 	.nav-buttons {
 		display: none;
-	}
-
-	.menu-btn {
-		display: block;
 	}
 
 	.collapsible-menu {

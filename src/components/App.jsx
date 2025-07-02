@@ -35,7 +35,12 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 
 		if (parts.length === 1 && Object.values(SECTIONS).includes(parts[0])) {
 			section = parts[0]
-		} else if (parts.length === 3 && Object.values(SECTIONS).includes(parts[0]) && parts[1] === 'story' && !isNaN(parseInt(parts[2], 10))) {
+		} else if (
+			parts.length === 3 &&
+			Object.values(SECTIONS).includes(parts[0]) &&
+			parts[1] === 'story' &&
+			!isNaN(parseInt(parts[2], 10))
+		) {
 			section = parts[0]
 			storyId = parseInt(parts[2], 10)
 		} else if (parts.length === 2 && parts[0] === 'story' && !isNaN(parseInt(parts[1], 10))) {
@@ -86,11 +91,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {
-			if (
-				menuRef.value &&
-				!menuRef.value.contains(event.target) &&
-				!menuBtnRef.value.contains(event.target)
-			) {
+			if (menuRef.value && !menuRef.value.contains(event.target) && !menuBtnRef.value.contains(event.target)) {
 				menuVisible.value = false
 			}
 		}
@@ -213,6 +214,24 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	return (R) => (
 		<>
 			<div class="tabs">
+				<If condition={selectedStoryId.and(isSmallScreen)}>
+					{() => (
+						<button class="btn back-btn hide-on-large-screen" on:click={() => updateHash(currentSection.value, null)}>
+							←
+						</button>
+					)}
+					{() => (
+						<button
+							$ref={menuBtnRef}
+							class="btn"
+							class:active={needRefresh}
+							class:hidden={() => !isSmallScreen.value}
+							on:click={() => (menuVisible.value = !menuVisible.value)}
+						>
+							☰
+						</button>
+					)}
+				</If>
 				<h1 class="page-title">HackerNews</h1>
 				<div $ref={menuRef} class:visible={menuVisible} class="collapsible-menu">
 					<Sections />
@@ -256,6 +275,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				</span>
 				<button
 					class="btn"
+					class:hidden={selectedStoryId.and(isSmallScreen)}
 					on:click={() => {
 						fetchStoryIds(currentSection.value, abortController.signal)
 					}}
@@ -305,23 +325,6 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 						</a>
 					)}
 				</If>
-				<If condition={selectedStoryId.and(isSmallScreen)}>
-					{() => (
-						<button class="btn back-btn hide-on-large-screen" on:click={() => updateHash(currentSection.value, null)}>
-							←
-						</button>
-					)}
-					{() => (
-						<button
-							$ref={menuBtnRef}
-							class="btn menu-btn"
-							class:active={needRefresh}
-							on:click={() => (menuVisible.value = !menuVisible.value)}
-						>
-							☰
-						</button>
-					)}
-				</If>
 			</div>
 			<div class="main-layout" class:show-comments={selectedStoryId.and(isSmallScreen)}>
 				<div class="story-list" style={$(() => `flex-basis: ${storyListWidth.value}%;`)}>
@@ -330,7 +333,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 						{({ item: storyId }) => (
 							<StoryItem
 								storyId={storyId}
-																	onSelect={(story) => {
+								onSelect={(story) => {
 									selectedStory.value = story
 									selectedStoryId.value = story.id
 								}}
