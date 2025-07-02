@@ -216,13 +216,13 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				<h1 class="page-title">HackerNews</h1>
 				<div $ref={menuRef} class:visible={menuVisible} class="collapsible-menu">
 					<Sections />
-					<If condition={checkSWUpdate.and(needRefresh)}>
+					<If condition={needRefresh}>
 						{() => (
 							<button
 								class="btn active"
 								on:click={() => {
 									if (needRefresh.value) return updateSW()
-									else checkSWUpdate.value()
+									else checkSWUpdate.value?.()
 								}}
 							>
 								Update
@@ -283,10 +283,10 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				<If condition={checkSWUpdate.and(needRefresh)}>
 					{() => (
 						<button
-							class="btn active"
+							class="btn active hide-on-small-screen"
 							on:click={() => {
 								if (needRefresh.value) return updateSW()
-								else checkSWUpdate.value()
+								else checkSWUpdate.value?.()
 							}}
 						>
 							Update
