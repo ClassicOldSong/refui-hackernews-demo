@@ -230,6 +230,19 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				<h1 class="page-title">HackerNews</h1>
 				<div $ref={menuRef} class:visible={menuVisible} class="collapsible-menu">
 					<Sections />
+					<button class="btn" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
+						{isDarkMode.and('Light').or('Dark')}
+					</button>
+					<a
+						href="https://github.com/ClassicOldSong/refui-hackernews-demo"
+						target="_blank"
+						class="btn"
+						on:click={() => {
+							checkSWUpdate.value?.()
+						}}
+					>
+						GitHub
+					</a>
 					<If condition={needRefresh}>
 						{() => (
 							<button
@@ -241,18 +254,6 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 							>
 								Update
 							</button>
-						)}
-						{() => (
-							<a
-								href="https://github.com/ClassicOldSong/refui-hackernews-demo"
-								target="_blank"
-								class="btn"
-								on:click={() => {
-									checkSWUpdate.value?.()
-								}}
-							>
-								GitHub
-							</a>
 						)}
 					</If>
 					<span>
@@ -285,9 +286,13 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				>
 					&#x21bb;{/* reload */}
 				</button>
-				<button class="btn" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
-					{isDarkMode.and('Light').or('Dark')}
-				</button>
+				<If condition={isSmallScreen.inverse().or(selectedStoryId)}>
+					{() => (
+						<button class="btn" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
+							{isDarkMode.and('Light').or('Dark')}
+						</button>
+					)}
+				</If>
 				<If condition={installPrompt}>
 					{() => (
 						<button
