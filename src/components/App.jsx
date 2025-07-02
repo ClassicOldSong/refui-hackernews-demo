@@ -47,12 +47,15 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	}
 
 	const updateHash = (section, storyId, replace = false) => {
+		const oldHash = window.location.hash.substring(1)
+		const wasOnStory = oldHash.includes('/story/')
+
 		let newHash = section
 		if (storyId) {
 			newHash = `${section}/story/${storyId}`
 		}
-		if (window.location.hash.substring(1) !== newHash) {
-			if (replace) {
+		if (oldHash !== newHash) {
+			if (replace || (!storyId && wasOnStory)) {
 				location.replace(`#${newHash}`)
 			} else {
 				window.location.hash = newHash
@@ -197,8 +200,8 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 					class:active={currentSection.eq(value)}
 					on:click={() => {
 						currentSection.value = value
+						selectedStoryId.value = null // Clear selected story
 						menuVisible.value = false
-						updateHash(value, selectedStoryId.value, false)
 					}}
 				>
 					{name}
@@ -213,16 +216,31 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				<h1 class="page-title">HackerNews</h1>
 				<div $ref={menuRef} class:visible={menuVisible} class="collapsible-menu">
 					<Sections />
-					<a
-						href="https://github.com/ClassicOldSong/refui-hackernews-demo"
-						target="_blank"
-						class="btn"
-						on:click={() => {
-							checkSWUpdate.value?.()
-						}}
-					>
-						GitHub
-					</a>
+					<If condition={checkSWUpdate.and(needRefresh)}>
+						{() => (
+							<button
+								class="btn active"
+								on:click={() => {
+									if (needRefresh.value) return updateSW()
+									else checkSWUpdate.value()
+								}}
+							>
+								Update
+							</button>
+						)}
+						{() => (
+							<a
+								href="https://github.com/ClassicOldSong/refui-hackernews-demo"
+								target="_blank"
+								class="btn"
+								on:click={() => {
+									checkSWUpdate.value?.()
+								}}
+							>
+								GitHub
+							</a>
+						)}
+					</If>
 				</div>
 				<div class="overlay" class:visible={menuVisible} on:click={() => (menuVisible.value = false)}></div>
 				<div class="nav-buttons">
@@ -297,6 +315,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 						<button
 							$ref={menuBtnRef}
 							class="btn menu-btn"
+							class:active={needRefresh}
 							on:click={() => (menuVisible.value = !menuVisible.value)}
 						>
 							☰
