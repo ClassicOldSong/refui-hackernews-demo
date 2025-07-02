@@ -13,12 +13,6 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		Jobs: 'jobstories'
 	}
 
-	const getSectionFromHash = () => {
-		const hash = window.location.hash.substring(1) // Remove #
-		const section = Object.values(SECTIONS).find((s) => s === hash)
-		return section || 'topstories'
-	}
-
 	const isDarkMode = signal(localStorage.getItem('darkMode') === 'true')
 
 	watch(() => {
@@ -32,13 +26,48 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		updateThemeColor()
 	})
 
-	// --- State Signals ---
+	const parseHash = () => {
+		const hash = window.location.hash.substring(1)
+		const parts = hash.split('/')
+
+		let section = 'topstories' // Default section
+		let storyId = null
+
+		if (parts.length === 1 && Object.values(SECTIONS).includes(parts[0])) {
+			section = parts[0]
+		} else if (parts.length === 3 && Object.values(SECTIONS).includes(parts[0]) && parts[1] === 'story' && !isNaN(parseInt(parts[2], 10))) {
+			section = parts[0]
+			storyId = parseInt(parts[2], 10)
+		} else if (parts.length === 2 && parts[0] === 'story' && !isNaN(parseInt(parts[1], 10))) {
+			// Handle old format #story/123
+			storyId = parseInt(parts[1], 10)
+		}
+
+		return { section, storyId }
+	}
+
+	const updateHash = (section, storyId, replace = false) => {
+		let newHash = section
+		if (storyId) {
+			newHash = `${section}/story/${storyId}`
+		}
+		if (window.location.hash.substring(1) !== newHash) {
+			if (replace) {
+				location.replace(`#${newHash}`)
+			} else {
+				window.location.hash = newHash
+			}
+		}
+	}
+
+	const { section: initialSection, storyId: initialStoryId } = parseHash()
+
 	const allStoryIds = signal([]) // Stores all fetched story IDs for the current section
 	const storiesLimit = signal(30) // Number of stories to display
-	const currentSection = signal(getSectionFromHash())
+	const currentSection = signal(initialSection)
 	const isLoading = signal(false)
+	const selectedStoryId = signal(initialStoryId)
 	const selectedStory = signal()
-	const selectedStoryId = signal(null)
 	const storyListWidth = signal(parseFloat(localStorage.getItem('storyListWidth') || '30'))
 	const refreshSignal = signal()
 	const isSmallScreen = signal(window.innerWidth < 768)
@@ -91,19 +120,18 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	// Derived signal for stories currently displayed
 	const storyIds = $(() => allStoryIds.value.slice(0, storiesLimit.value))
 
-	// --- Routing Logic ---
-	// Update hash when currentSection changes
-	watch(() => {
-		if (window.location.hash.substring(1) !== currentSection.value) {
-			window.location.hash = currentSection.value
-		}
-	})
-
 	// Update currentSection when hash changes (e.g., back/forward buttons)
 
 	useEffect(() => {
 		const hashChangeEffect = () => {
-			currentSection.value = getSectionFromHash()
+			const { section: newSection, storyId: newStoryId } = parseHash()
+
+			if (newSection !== currentSection.value) {
+				currentSection.value = newSection
+			}
+			if (newStoryId !== selectedStoryId.value) {
+				selectedStoryId.value = newStoryId
+			}
 		}
 		window.addEventListener('hashchange', hashChangeEffect)
 		const mediaQuery = window.matchMedia('(max-width: 768px)')
@@ -116,6 +144,10 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 			window.removeEventListener('hashchange', hashChangeEffect)
 			mediaQuery.removeEventListener('change', mediaQueryChange)
 		}
+	})
+
+	watch(() => {
+		updateHash(currentSection.value, selectedStoryId.value)
 	})
 
 	// --- Data Fetching ---
@@ -166,6 +198,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 					on:click={() => {
 						currentSection.value = value
 						menuVisible.value = false
+						updateHash(value, selectedStoryId.value, false)
 					}}
 				>
 					{name}
@@ -256,7 +289,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				</If>
 				<If condition={selectedStoryId.and(isSmallScreen)}>
 					{() => (
-						<button class="btn back-btn hide-on-large-screen" on:click={() => (selectedStoryId.value = null)}>
+						<button class="btn back-btn hide-on-large-screen" on:click={() => updateHash(currentSection.value, null)}>
 							←
 						</button>
 					)}
@@ -278,9 +311,9 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 						{({ item: storyId }) => (
 							<StoryItem
 								storyId={storyId}
-								onSelect={(story) => {
-									selectedStoryId.value = story.id
+																	onSelect={(story) => {
 									selectedStory.value = story
+									selectedStoryId.value = story.id
 								}}
 								match={matchStoryId}
 								abort={abortController.signal}
@@ -299,13 +332,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				<div class="resizer" on:mousedown={startDragging}></div>
 				<div class="comments-panel" style:flexBasis={$(() => `${100 - storyListWidth.value}%`)}>
 					<If condition={selectedStoryId}>
-						{(R) => (
-							<Comments
-								storyData={selectedStory}
-								storyId={selectedStoryId}
-								onBack={() => (selectedStoryId.value = null)}
-							/>
-						)}
+						{(R) => <Comments storyId={selectedStoryId} initialStoryData={selectedStory} />}
 						{() => <div class="no-story-selected">Select a story to view comments.</div>}
 					</If>
 				</div>

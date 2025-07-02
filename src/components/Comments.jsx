@@ -42,7 +42,7 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 		}
 
 		const userUrl = `https://news.ycombinator.com/user?id=${comment.by}`
-		const storyUrl = `https://news.ycombinator.com/item?id=${storyData.value.id}`
+		const storyUrl = t`https://news.ycombinator.com/item?id=${storyData.value?.id}`
 
 		const commentsPerPage = 5
 		const commentsToShow = signal(depth >= MAX_DEPTH ? 0 : commentsPerPage)
@@ -109,10 +109,46 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 	}
 }
 
-const Comments = ({ storyData }) => {
+const Comments = ({ storyId, initialStoryData }) => {
 	const commentsPerPage = 5
 	const commentsToShow = signal(commentsPerPage)
 	const isLoadingComments = signal(false)
+	const storyData = signal(initialStoryData.value || null)
+	const isLoadingStory = signal(!initialStoryData.value)
+	const storyError = signal(null)
+
+	watch(() => {
+		async function fetchStoryData() {
+			if (!storyId.value) {
+				storyData.value = null
+				isLoadingStory.value = false
+				return
+			}
+
+			if (initialStoryData.value && initialStoryData.value.id === storyId.value) {
+				storyData.value = initialStoryData.value
+				isLoadingStory.value = false
+				return
+			}
+
+			isLoadingStory.value = true
+			storyError.value = null
+			try {
+				const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${storyId.value}.json`)
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`)
+				}
+				const data = await response.json()
+				storyData.value = data
+			} catch (error) {
+				storyError.value = error
+			} finally {
+				isLoadingStory.value = false
+			}
+		}
+		fetchStoryData()
+	})
+
 	const { title, id, by, score, descendants, url, kids, text, time } = derivedExtract(
 		storyData,
 		'title',
@@ -135,13 +171,8 @@ const Comments = ({ storyData }) => {
 	const userUrl = t`https://news.ycombinator.com/user?id=${by}`
 
 	let abortController = null
-	let lastId = id.peek()
 
 	useEffect(() => {
-		if (lastId !== storyData.value.id) {
-			commentsToShow.value = commentsPerPage
-			lastId = storyData.value.id
-		}
 		abortController = new AbortController()
 		return () => {
 			console.log('Comments unmounted or refreshed, aborting all pending requests.')
@@ -151,62 +182,77 @@ const Comments = ({ storyData }) => {
 
 	return (R) => (
 		<div class="comments-container">
-			<div class="comments-header">
-				
-				<h3>
-					<a href={url} target="_blank">
-						{title}
-					</a>
-				</h3>
-				<div class="story-meta">
-					{score} point{addS(score)} by{' '}
-					<a href={userUrl} target="_blank">
-						{by}
-					</a>
-					{' | '}
-					<a href={commentsUrl} target="_blank">
-						{descendants} comment{addS(descendants)}
-					</a>
-					{' | '}
-					<span class="time">{formatTime(time)}</span>
-				</div>
-				<If condition={text}>
-					{() => (
-						<div class="story-text">
-							<Parse text={text} parser={addTargetBlankToLinks} />
-						</div>
-					)}
-				</If>
-			</div>
-			<If condition={isLoadingComments}>
-				{() => <div class="loading">Loading comments...</div>}
+			<If condition={isLoadingStory}>
+				{() => <div class="loading">Loading story...</div>}
 				{() => (
-					<>
-						<If condition={$(() => comments.value.length > 0)}>
-							{() => (
-								<For entries={comments}>
-									{({ item: commentId }) => (
-										<CommentItem
-											commentId={commentId}
-											fallback={CommentFallback}
-											catch={ErrorFallback}
-											storyData={storyData}
-											abort={abortController.signal}
-											depth={0}
-										/>
-									)}
-								</For>
-							)}
-							{() => <div class="no-comments">No comments yet.</div>}
-						</If>
-						<If condition={$(() => commentsToShow.value < kids.value?.length)}>
-							{() => (
-								<button class="load-more-btn" on:click={() => (commentsToShow.value += commentsPerPage)}>
-									Load More ({$(() => kids.value?.length - commentsToShow.value)})
-								</button>
-							)}
-						</If>
-					</>
+					<If condition={storyError}>
+						{() => <div class="error">Error loading story: {storyError.value.message}</div>}
+						{() => (
+							<If condition={storyData}>
+								{() => (
+									<>
+										<div class="comments-header">
+											<h3>
+												<a href={url} target="_blank">
+													{title}
+												</a>
+											</h3>
+											<div class="story-meta">
+												{score} point{addS(score)} by{' '}
+												<a href={userUrl} target="_blank">
+													{by}
+												</a>
+												{' | '}
+												<a href={commentsUrl} target="_blank">
+													{descendants} comment{addS(descendants)}
+												</a>
+												{' | '}
+												<span class="time">{formatTime(time)}</span>
+											</div>
+											<If condition={text}>
+												{() => (
+													<div class="story-text">
+														<Parse text={text} parser={addTargetBlankToLinks} />
+													</div>
+												)}
+											</If>
+										</div>
+										<If condition={isLoadingComments}>
+											{() => <div class="loading">Loading comments...</div>}
+											{() => (
+												<>
+													<If condition={$(() => comments.value.length > 0)}>
+														{() => (
+															<For entries={comments}>
+																{({ item: commentId }) => (
+																	<CommentItem
+																		commentId={commentId}
+																		fallback={CommentFallback}
+																		catch={ErrorFallback}
+																		storyData={storyData}
+																		abort={abortController.signal}
+																		depth={0}
+																	/>
+																)}
+															</For>
+														)}
+														{() => <div class="no-comments">No comments yet.</div>}
+													</If>
+													<If condition={$(() => commentsToShow.value < kids.value?.length)}>
+														{() => (
+															<button class="load-more-btn" on:click={() => (commentsToShow.value += commentsPerPage)}>
+																Load More ({$(() => kids.value?.length - commentsToShow.value)})
+															</button>
+														)}
+													</If>
+												</>
+											)}
+										</If>
+									</>
+								)}
+							</If>
+						)}
+					</If>
 				)}
 			</If>
 		</div>

@@ -23,6 +23,18 @@ indent_style = space
 indent_style = space
 ```
 
+Use `pnpm build` to check potential build errors, as `pnpm dev` spawns a blocking dev server.
+
+Please note, build success doesn't mean no runtime issues. Check carefully if you have made any existing variables disappear during the edit, or the new variables has not been declared.
+
+## AI contribution rules (apply to every task)
+
+1. Preserve existing code style, indentation, variable names, resource naming, and line endings; never re-format unrelated code.
+2. Make the smallest possible change set that fully addresses the task; do not touch out-of-scope files.
+3. **No extra comments**: do not introduce or translate comments unless explicitly asked.
+4. Fix root causes rather than masking symptoms; avoid defensive checks unless requested.
+5. Do not change public APIs or existing functionality unless required by the task.
+
 
 **Important Notes for this Project:**
 *   **Retained Mode Rendering:** rEFui directly manages the DOM based on state, unlike virtual DOM libraries.
@@ -79,6 +91,8 @@ indent_style = space
 *   Use `peek()` to avoid creating unnecessary dependencies.
 *   Updates are automatically batched.
 *   Use `untrack()` for non-reactive operations.
+*   Use `watch` for effects without returning cleanup functions
+*   `useEffect` does not need dependency list, instead the other arguments are passed as-is to the effect as parameters.
 
 ---
 
