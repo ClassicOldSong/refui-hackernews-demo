@@ -5,12 +5,12 @@ import { version } from 'refui/package.json'
 
 const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updateSW, installPrompt }) => {
 	const SECTIONS = {
-		Top: 'topstories',
-		New: 'newstories',
-		Best: 'beststories',
-		Ask: 'askstories',
-		Show: 'showstories',
-		Jobs: 'jobstories'
+		topstories: 'Top',
+		newstories: 'New',
+		beststories: 'Best',
+		askstories: 'Ask',
+		showstories: 'Show',
+		jobstories: 'Jobs'
 	}
 
 	const isDarkMode = signal(localStorage.getItem('darkMode') === 'true')
@@ -33,11 +33,11 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		let section = 'topstories' // Default section
 		let storyId = null
 
-		if (parts.length === 1 && Object.values(SECTIONS).includes(parts[0])) {
+		if (parts.length === 1 && SECTIONS[parts[0]]) {
 			section = parts[0]
 		} else if (
 			parts.length === 3 &&
-			Object.values(SECTIONS).includes(parts[0]) &&
+			SECTIONS[parts[0]] &&
 			parts[1] === 'story' &&
 			!isNaN(parseInt(parts[2], 10))
 		) {
@@ -198,14 +198,14 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 			{Object.entries(SECTIONS).map(([name, value]) => (
 				<button
 					class="btn"
-					class:active={currentSection.eq(value)}
+					class:active={currentSection.eq(name)}
 					on:click={() => {
-						currentSection.value = value
+						currentSection.value = name
 						selectedStoryId.value = null // Clear selected story
 						menuVisible.value = false
 					}}
 				>
-					{name}
+					{value}
 				</button>
 			))}
 		</>
@@ -228,7 +228,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 							class:hidden={() => !isSmallScreen.value}
 							on:click={() => (menuVisible.value = !menuVisible.value)}
 						>
-							☰
+							{$(() => SECTIONS[currentSection])}
 						</button>
 					)}
 				</If>
@@ -260,6 +260,13 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 							</a>
 						)}
 					</If>
+					<span>
+						Proudly made with{' '}
+						<a href="https://github.com/SudoMaker/rEFui" target="_blank" class="tab-link">
+							rEFui
+						</a>{' '}
+						v{version}
+					</span>
 				</div>
 				<div class="overlay" class:visible={menuVisible} on:click={() => (menuVisible.value = false)}></div>
 				<div class="nav-buttons">

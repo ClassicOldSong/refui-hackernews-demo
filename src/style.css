@@ -463,15 +463,15 @@ body {
 
 .collapsible-menu {
 	display: none;
+	.btn {
+		text-align: left;
+	}
 }
 
 .hidden {
 	display: none;
 }
 
-.collapsible-menu .btn {
-	text-align: left;
-}
 
 .overlay {
 	display: none;
@@ -568,7 +568,6 @@ body {
   	padding-right: 4px;
 	  .comment-children {
 	    padding-left: 2px;
-	    /* border-radius: 5px 5px 5px 5px; */
 	  }
   }
 }
