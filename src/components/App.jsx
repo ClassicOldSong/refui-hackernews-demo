@@ -216,7 +216,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 			<div class="tabs">
 				<If condition={selectedStoryId.and(isSmallScreen)}>
 					{() => (
-						<button class="btn back-btn hide-on-large-screen" on:click={() => updateHash(currentSection.value, null)}>
+						<button class="btn back-btn hide-on-large-screen" on:click={() => history.back()}>
 							←
 						</button>
 					)}
