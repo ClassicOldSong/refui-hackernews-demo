@@ -152,6 +152,7 @@ body {
 /* Tabs and Buttons */
 .tabs {
   display: flex;
+	flex-wrap: wrap;
   gap: 10px;
   border-bottom: 1px solid var(--border-color);
   align-items: center;
@@ -498,7 +499,6 @@ body {
 	}
 
 	.tabs {
-		flex-wrap: wrap;
 		--header-padding: 10px;
 	}
 
@@ -567,8 +567,8 @@ body {
 	}
 
   .comment-item {
-  	padding-left: 4px;
-  	padding-right: 4px;
+  	padding: 4px;
+  	margin-bottom: 4px;
 	  .comment-children {
 	    padding-left: 2px;
 	  }

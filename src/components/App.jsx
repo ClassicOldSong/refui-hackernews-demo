@@ -86,7 +86,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {
-			if (menuRef.value && !menuRef.value.contains(event.target) && !menuBtnRef.value.contains(event.target)) {
+			if ((menuRef.value && !menuRef.value.contains(event.target)) && (menuBtnRef.value && !menuBtnRef.value.contains(event.target))) {
 				menuVisible.value = false
 			}
 		}
@@ -286,7 +286,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				>
 					&#x21bb;{/* reload */}
 				</button>
-				<If condition={isSmallScreen.inverse().or(selectedStoryId)}>
+				<If condition={isSmallScreen.inverse().or(isSmallScreen.and(selectedStoryId))}>
 					{() => (
 						<button class="btn" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
 							{isDarkMode.and('Light').or('Dark')}
