@@ -141,7 +141,6 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 
 	const onResize = () => {
 		isSmallScreen.value = window.innerWidth < 768
-		console.log('SMALL!!!')
 	}
 
 	useEffect(() => {
