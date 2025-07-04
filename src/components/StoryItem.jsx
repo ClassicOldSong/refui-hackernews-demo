@@ -24,11 +24,22 @@ const Story = ({ story, isSelected, onSelect }) => {
 	const commentsUrl = `https://news.ycombinator.com/item?id=${id}`
 	const userUrl = `https://news.ycombinator.com/user?id=${by}`
 	return (R) => (
-		<div class="story" class:selected={isSelected} on:click={() => onSelect(story.value)}>
+		<a
+			class="story"
+			class:selected={isSelected}
+			href={url || commentsUrl}
+			target="_blank"
+			rel="noopener noreferrer"
+			on:click={(e) => {
+				if (e.target.tagName === 'A' && e.target.className !== 'story') {
+					return
+				}
+				e.preventDefault()
+				onSelect(story.value)
+			}}
+		>
 			<div class="story-title">
-				{/*<a href={url || commentsUrl} target="_blank" rel="noopener noreferrer">*/}
 				{title}
-				{/*</a>*/}
 			</div>
 			<div class="story-meta">
 				{score} point{addS(score)} by{' '}
@@ -41,7 +52,7 @@ const Story = ({ story, isSelected, onSelect }) => {
 				</a>{' '}
 				| <span class="time">{formatTime(time)}</span>
 			</div>
-		</div>
+		</a>
 	)
 }
 
