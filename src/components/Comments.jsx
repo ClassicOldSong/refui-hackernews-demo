@@ -61,7 +61,10 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 								<a href={userUrl} target="_blank">
 									{comment.by}
 								</a>{' '}
-								| {formatTime(comment.time)}
+								| {formatTime(comment.time)} |{' '}
+								<a href={`https://news.ycombinator.com/reply?id=${comment.id}`} target="_blank">
+									reply
+								</a>
 							</div>
 							<div class="comment-text">
 								<Parse text={comment.text} parser={addTargetBlankToLinks} />
