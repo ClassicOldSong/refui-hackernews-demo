@@ -33,14 +33,6 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 			return null
 		}
 
-		if (comment.dead) {
-			return (R) => <div class="comment-item deleted-comment">[moderated]</div>
-		}
-
-		if (comment.deleted) {
-			return (R) => <div class="comment-item deleted-comment">[deleted]</div>
-		}
-
 		const userUrl = `https://news.ycombinator.com/user?id=${comment.by}`
 		const storyUrl = t`https://news.ycombinator.com/item?id=${storyData.value?.id}`
 
@@ -56,18 +48,27 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 			depth = 0
 		}
 
+		const isDeleted = comment.dead || comment.deleted
+
 		return (R) => (
-			<div class="comment-item">
-				<div class="comment-meta">
-					by{' '}
-					<a href={userUrl} target="_blank">
-						{comment.by}
-					</a>{' '}
-					| {formatTime(comment.time)}
-				</div>
-				<div class="comment-text">
-					<Parse text={comment.text} parser={addTargetBlankToLinks} />
-				</div>
+			<div class="comment-item" class:deleted-comment={isDeleted}>
+				<If condition={isDeleted}>
+					{() => <div>{comment.dead ? '[moderated]' : '[deleted]'}</div>}
+					{() => (
+						<>
+							<div class="comment-meta">
+								by{' '}
+								<a href={userUrl} target="_blank">
+									{comment.by}
+								</a>{' '}
+								| {formatTime(comment.time)}
+							</div>
+							<div class="comment-text">
+								<Parse text={comment.text} parser={addTargetBlankToLinks} />
+							</div>
+						</>
+					)}
+				</If>
 				<If condition={$(() => comment.kids && comment.kids.length > 0)}>
 					{() => (
 						<div class="comment-children">
