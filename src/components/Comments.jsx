@@ -1,4 +1,4 @@
-import { signal, For, If, $, t, watch, onDispose, derivedExtract, Render, useEffect, readAll } from 'refui'
+import { signal, For, If, $, t, watch, onDispose, derivedExtract, Render, useEffect, readAll, tick } from 'refui'
 import { Parse } from 'refui/extras/parse.js'
 import { addTargetBlankToLinks } from '../utils/dom.js'
 import { formatTime } from '../utils/time.js'
@@ -121,36 +121,58 @@ const Comments = ({ storyId, initialStoryData }) => {
 	const isLoadingStory = signal(!initialStoryData.value)
 	const storyError = signal(null)
 
-	watch(() => {
-		async function fetchStoryData() {
-			if (!storyId.value) {
+	let lastStoryId = null
+	let abortController = null
+
+	onDispose(() => {
+		abortController?.abort()
+	})
+
+	watch(async () => {
+		abortController?.abort()
+		abortController = new AbortController()
+		if (!storyId.value) {
+			// storyData.value = null
+			isLoadingStory.value = false
+			lastStoryId = storyId.value
+			return
+		}
+
+		if (!lastStoryId) {
+			storyData.value = null
+			commentsToShow.value = commentsPerPage
+			await tick()
+		}
+
+		lastStoryId = storyId.value
+
+		if (initialStoryData.value && initialStoryData.value.id === storyId.value) {
+			storyData.value = initialStoryData.value
+			isLoadingStory.value = false
+			return
+		}
+
+		isLoadingStory.value = true
+		storyError.value = null
+		try {
+			const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${storyId.value}.json`, {
+				signal: abortController.signal
+			})
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`)
+			}
+			const data = await response.json()
+			storyData.value = data
+		} catch (error) {
+			if (error.name === 'AbortError') {
 				storyData.value = null
 				isLoadingStory.value = false
-				return
-			}
-
-			if (initialStoryData.value && initialStoryData.value.id === storyId.value) {
-				storyData.value = initialStoryData.value
-				isLoadingStory.value = false
-				return
-			}
-
-			isLoadingStory.value = true
-			storyError.value = null
-			try {
-				const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${storyId.value}.json`)
-				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`)
-				}
-				const data = await response.json()
-				storyData.value = data
-			} catch (error) {
+			} else {
 				storyError.value = error
-			} finally {
-				isLoadingStory.value = false
 			}
+		} finally {
+			isLoadingStory.value = false
 		}
-		fetchStoryData()
 	})
 
 	const { title, id, by, score, descendants, url, kids, text, time } = derivedExtract(
@@ -173,16 +195,6 @@ const Comments = ({ storyId, initialStoryData }) => {
 
 	const commentsUrl = t`https://news.ycombinator.com/item?id=${id}`
 	const userUrl = t`https://news.ycombinator.com/user?id=${by}`
-
-	let abortController = null
-
-	useEffect(() => {
-		abortController = new AbortController()
-		return () => {
-			console.log('Comments unmounted or refreshed, aborting all pending requests.')
-			abortController?.abort()
-		}
-	})
 
 	return (R) => (
 		<div class="comments-container">
@@ -254,6 +266,7 @@ const Comments = ({ storyId, initialStoryData }) => {
 										</If>
 									</>
 								)}
+								{() => <div class="no-story-selected">Select a story to view comments.</div>}
 							</If>
 						)}
 					</If>

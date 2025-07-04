@@ -1,7 +1,9 @@
-import { signal, For, If, watch, $, useEffect, onDispose, onCondition } from 'refui'
+import { signal, For, If, watch, $, useEffect, onDispose, onCondition, nextTick } from 'refui'
 import { StoryItem } from './StoryItem.jsx'
 import Comments from './Comments'
 import { version } from 'refui/package.json'
+
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
 
 const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updateSW, installPrompt }) => {
 	const SECTIONS = {
@@ -86,7 +88,12 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {
-			if ((menuRef.value && !menuRef.value.contains(event.target)) && (menuBtnRef.value && !menuBtnRef.value.contains(event.target))) {
+			if (
+				menuRef.value &&
+				!menuRef.value.contains(event.target) &&
+				menuBtnRef.value &&
+				!menuBtnRef.value.contains(event.target)
+			) {
 				menuVisible.value = false
 			}
 		}
@@ -121,30 +128,33 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 
 	// Update currentSection when hash changes (e.g., back/forward buttons)
 
-	useEffect(() => {
-		const hashChangeEffect = () => {
-			const { section: newSection, storyId: newStoryId } = parseHash()
+	const hashChangeEffect = () => {
+		const { section: newSection, storyId: newStoryId } = parseHash()
 
-			if (newSection !== currentSection.value) {
-				currentSection.value = newSection
-			}
-			if (newStoryId !== selectedStoryId.value) {
-				selectedStoryId.value = newStoryId
-			}
+		if (newSection !== currentSection.value) {
+			currentSection.value = newSection
 		}
+		if (newStoryId !== selectedStoryId.value) {
+			selectedStoryId.value = newStoryId
+		}
+	}
+
+	const onResize = () => {
+		isSmallScreen.value = window.innerWidth < 768
+		console.log('SMALL!!!')
+	}
+
+	useEffect(() => {
 		window.addEventListener('hashchange', hashChangeEffect)
-		const mediaQuery = window.matchMedia('(max-width: 768px)')
-		const mediaQueryChange = (e) => {
-			isSmallScreen.value = e.matches
-		}
-		mediaQuery.addEventListener('change', mediaQueryChange)
+		window.addEventListener('resize', onResize)
 
 		return () => {
 			window.removeEventListener('hashchange', hashChangeEffect)
-			mediaQuery.removeEventListener('change', mediaQueryChange)
+			window.removeEventListener('resize', onResize)
 		}
 	})
 
+	const noTransition = signal(false)
 	watch(() => {
 		updateHash(currentSection.value, selectedStoryId.value)
 	})
@@ -188,18 +198,16 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		}
 	})
 
+	const handleSectionChange = (name) => {
+		currentSection.value = name
+		selectedStoryId.value = null // Clear selected story
+		menuVisible.value = false
+	}
+
 	const Sections = () => (R) => (
 		<>
 			{Object.entries(SECTIONS).map(([name, value]) => (
-				<button
-					class="btn"
-					class:active={currentSection.eq(name)}
-					on:click={() => {
-						currentSection.value = name
-						selectedStoryId.value = null // Clear selected story
-						menuVisible.value = false
-					}}
-				>
+				<button class="btn" class:active={currentSection.eq(name)} on:click={() => handleSectionChange(name)}>
 					{value}
 				</button>
 			))}
@@ -211,7 +219,13 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 			<div class="tabs">
 				<If condition={selectedStoryId.and(isSmallScreen)}>
 					{() => (
-						<button class="btn back-btn hide-on-large-screen" on:click={() => history.back()}>
+						<button
+							class="btn back-btn hide-on-large-screen"
+							on:click={() => {
+								noTransition.value = false
+								history.back()
+							}}
+						>
 							←
 						</button>
 					)}
@@ -286,7 +300,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				>
 					&#x21bb;{/* reload */}
 				</button>
-				<If condition={isSmallScreen.inverse().or(isSmallScreen.and(selectedStoryId))}>
+				<If condition={isSmallScreen.inverseOr(isSmallScreen.and(selectedStoryId))}>
 					{() => (
 						<button class="btn" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
 							{isDarkMode.and('Light').or('Dark')}
@@ -333,7 +347,11 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 					)}
 				</If>
 			</div>
-			<div class="main-layout" class:show-comments={selectedStoryId.and(isSmallScreen)}>
+			<div
+				class="main-layout"
+				class:show-comments={selectedStoryId.and(isSmallScreen)}
+				class:no-transition={noTransition}
+			>
 				<div class="story-list" style={$(() => `flex-basis: ${storyListWidth.value}%;`)}>
 					<If condition={isLoading}>{() => <div class="loading">Loading story list...</div>}</If>
 					<For entries={storyIds}>
@@ -341,8 +359,11 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 							<StoryItem
 								storyId={storyId}
 								onSelect={(story) => {
-									selectedStory.value = story
-									selectedStoryId.value = story.id
+									noTransition.value = false
+									setTimeout(() => {
+										selectedStory.value = story
+										selectedStoryId.value = story.id
+									}, 0)
 								}}
 								match={matchStoryId}
 								abort={abortController.signal}
@@ -359,11 +380,17 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 					</If>
 				</div>
 				<div class="resizer" on:mousedown={startDragging}></div>
-				<div class="comments-panel" style:flexBasis={$(() => `${100 - storyListWidth.value}%`)}>
-					<If condition={selectedStoryId}>
-						{(R) => <Comments storyId={selectedStoryId} initialStoryData={selectedStory} />}
-						{() => <div class="no-story-selected">Select a story to view comments.</div>}
-					</If>
+				<div
+					class="comments-panel"
+					style:flexBasis={$(() => `${100 - storyListWidth.value}%`)}
+					on:transitionend={
+						isIOS &&
+						(() => {
+							noTransition.value = true
+						})
+					}
+				>
+					<Comments storyId={selectedStoryId} initialStoryData={selectedStory} />
 				</div>
 			</div>
 		</>

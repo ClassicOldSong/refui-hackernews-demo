@@ -9,12 +9,12 @@ importers:
   .:
     dependencies:
       refui:
-        specifier: ^0.4.10
-        version: 0.4.10
+        specifier: ^0.4.11
+        version: 0.4.11
     devDependencies:
       refurbish:
         specifier: ^0.1.4
-        version: 0.1.4(refui@0.4.10)(rollup@2.79.2)
+        version: 0.1.4(refui@0.4.11)(rollup@2.79.2)
       vite:
         specifier: ^7.0.0
         version: 7.0.0(terser@5.43.1)
@@ -1449,8 +1449,8 @@ packages:
     resolution: {integrity: sha512-00o4I+DVrefhv+nX0ulyi3biSHCPDe+yLv5o/p6d/UVlirijB8E16FtfwSAi4g3tcqrQ4lRAqQSoFEZJehYEcw==}
     engines: {node: '>= 0.4'}
 
-  refui@0.4.10:
-    resolution: {integrity: sha512-IHd38tBkTgGOuFEXfevxW2oOa2JKRt1Hx+c4fJ/7eiiD8OPfTQSeS+KTZQJe0bcH56DUl0q/6reOHqLvNTl3WA==}
+  refui@0.4.11:
+    resolution: {integrity: sha512-YSqy7vrYA7uXRqWMm1/nxwK8v3W/IFJC1uCNkwduuUo/s9L8JLOj5NdQ+8QAKqz1yzD+qEEZBuO+6TKTB0DFMw==}
 
   refurbish@0.1.4:
     resolution: {integrity: sha512-9+wkIMPu6bEsmgOdOnOSaRB4jphIhecG52sIk4LpMExMRIFLJSy+Vg8TYOvnI9AxGU7W2CCjUtgq3cRqGO2BwA==}
@@ -3349,12 +3349,12 @@ snapshots:
       get-proto: 1.0.1
       which-builtin-type: 1.2.1
 
-  refui@0.4.10: {}
+  refui@0.4.11: {}
 
-  refurbish@0.1.4(refui@0.4.10)(rollup@2.79.2):
+  refurbish@0.1.4(refui@0.4.11)(rollup@2.79.2):
     dependencies:
       '@rollup/pluginutils': 5.2.0(rollup@2.79.2)
-      refui: 0.4.10
+      refui: 0.4.11
     transitivePeerDependencies:
       - rollup
 
