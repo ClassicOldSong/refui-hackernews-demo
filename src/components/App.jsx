@@ -1,4 +1,4 @@
-import { signal, For, If, watch, $, useEffect, onDispose, onCondition, nextTick } from 'refui'
+import { signal, For, If, watch, $, useEffect, onDispose, onCondition, nextTick, computed } from 'refui'
 import { StoryItem } from './StoryItem.jsx'
 import Comments from './Comments'
 import { version } from 'refui/package.json'
@@ -15,7 +15,46 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		jobstories: 'Jobs'
 	}
 
-	const isDarkMode = signal(localStorage.getItem('darkMode') === 'true')
+	const theme = signal(localStorage.getItem('theme') || 'auto') // 'auto', 'light', 'dark'
+	const systemIsDark = signal(window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+	const isDarkMode = computed(() => {
+		if (theme.value === 'auto') {
+			return systemIsDark.value
+		} else {
+			return theme.value === 'dark'
+		}
+	})
+
+	const cycleTheme = () => {
+		const modes = ['auto', 'light', 'dark']
+		const nextIndex = (modes.indexOf(theme.value) + 1) % modes.length
+		theme.value = modes[nextIndex]
+	}
+
+	const themeButtonLabel = computed(() => {
+		switch (theme.value) {
+			case 'light':
+				return 'Light'
+			case 'dark':
+				return 'Dark'
+			default:
+				return 'Auto'
+		}
+	})
+
+	useEffect(() => {
+		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+		const handleChange = (e) => {
+			systemIsDark.value = e.matches
+		}
+		mediaQuery.addEventListener('change', handleChange)
+		return () => mediaQuery.removeEventListener('change', handleChange)
+	})
+
+	watch(() => {
+		localStorage.setItem('theme', theme.value)
+	})
 
 	watch(() => {
 		if (isDarkMode.value) {
@@ -23,8 +62,6 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		} else {
 			document.body.classList.remove('dark-mode')
 		}
-		localStorage.setItem('darkMode', isDarkMode.value.toString())
-
 		updateThemeColor()
 	})
 
@@ -243,8 +280,8 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				<h1 class="page-title">HackerNews</h1>
 				<div $ref={menuRef} class:visible={menuVisible} class="collapsible-menu">
 					<Sections />
-					<button class="btn" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
-						{isDarkMode.and('Light').or('Dark')}
+					<button class="btn" on:click={cycleTheme}>
+						{themeButtonLabel}
 					</button>
 					<a
 						href="https://github.com/ClassicOldSong/refui-hackernews-demo"
@@ -301,8 +338,8 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				</button>
 				<If condition={isSmallScreen.inverseOr(isSmallScreen.and(selectedStoryId))}>
 					{() => (
-						<button class="btn" on:click={() => (isDarkMode.value = !isDarkMode.value)}>
-							{isDarkMode.and('Light').or('Dark')}
+						<button class="btn" on:click={cycleTheme}>
+							{themeButtonLabel}
 						</button>
 					)}
 				</If>
