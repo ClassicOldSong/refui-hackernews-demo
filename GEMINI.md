@@ -23,7 +23,7 @@ indent_style = space
 indent_style = space
 ```
 
-Use `pnpm build` to check potential build errors, as `pnpm dev` spawns a blocking dev server.
+If you want to check build errors, use `pnpm build`, do not use `pnpm dev`, as `pnpm dev` spawns a blocking dev server that never automatically exits.
 
 Please note, build success doesn't mean no runtime issues. Check carefully if you have made any existing variables disappear during the edit, or the new variables has not been declared.
 
@@ -34,7 +34,8 @@ Please note, build success doesn't mean no runtime issues. Check carefully if yo
 3. **No extra comments**: do not introduce or translate comments unless explicitly asked.
 4. Fix root causes rather than masking symptoms; avoid defensive checks unless requested.
 5. Do not change public APIs or existing functionality unless required by the task.
-6. **THIS IS NOT A REACT PROJECT**: Do not write React code, hooks, or JSX patterns. This uses rEFui with different patterns and concepts.
+6. Do not easily remove/change parts you don't understand. Ask users if you really want them changed.
+7. **THIS IS NOT A REACT PROJECT**: Do not write React code, hooks, or JSX patterns. This uses rEFui with different patterns and concepts.
 
 **Important Notes for this Project:**
 *   **Retained Mode Rendering:** rEFui directly manages the DOM based on state, unlike virtual DOM libraries.

@@ -116,6 +116,25 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	const menuVisible = signal(false)
 	const menuRef = signal(null)
 	const menuBtnRef = signal(null)
+	const storyListRef = signal(null)
+	const commentsPanelRef = signal(null)
+
+	watch(() => {
+		// When the current section or refresh signal changes, scroll to the top.
+		currentSection.value
+		refreshSignal.value
+		if (storyListRef.value) {
+			storyListRef.value.scrollTop = 0
+		}
+	})
+
+	watch(() => {
+		// When the selected story changes, scroll the comments panel to the top.
+		selectedStoryId.value
+		if (commentsPanelRef.value) {
+			commentsPanelRef.value.scrollTop = 0
+		}
+	})
 
 	const matchStoryId = onCondition(selectedStoryId)
 
@@ -388,7 +407,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				class:show-comments={selectedStoryId.and(isSmallScreen)}
 				class:no-transition={noTransition}
 			>
-				<div class="story-list" style={$(() => `flex-basis: ${storyListWidth.value}%;`)}>
+				<div $ref={storyListRef} class="story-list" style={$(() => `flex-basis: ${storyListWidth.value}%;`)}>
 					<If condition={isLoading}>{() => <div class="loading">Loading story list...</div>}</If>
 					<For entries={storyIds}>
 						{({ item: storyId }) => (
@@ -417,6 +436,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				</div>
 				<div class="resizer" on:mousedown={startDragging}></div>
 				<div
+					$ref={commentsPanelRef}
 					class="comments-panel"
 					style:flexBasis={$(() => `${100 - storyListWidth.value}%`)}
 					on:transitionend={
