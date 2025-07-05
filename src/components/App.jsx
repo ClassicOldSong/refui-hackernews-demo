@@ -254,7 +254,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 							checkSWUpdate.value?.()
 						}}
 					>
-						GitHub
+						Star on GitHub
 					</a>
 					<If condition={needRefresh}>
 						{() => (
@@ -323,7 +323,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				<If condition={checkSWUpdate.and(needRefresh)}>
 					{() => (
 						<button
-							class="btn active hide-on-small-screen"
+							class="btn active hide-on-smaller-screen"
 							on:click={() => {
 								if (needRefresh.value) return updateSW()
 								else checkSWUpdate.value?.()
@@ -336,12 +336,12 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 						<a
 							href="https://github.com/ClassicOldSong/refui-hackernews-demo"
 							target="_blank"
-							class="btn hide-on-small-screen"
+							class="btn hide-on-smaller-screen"
 							on:click={() => {
 								checkSWUpdate.value?.()
 							}}
 						>
-							GitHub
+							Star
 						</a>
 					)}
 				</If>

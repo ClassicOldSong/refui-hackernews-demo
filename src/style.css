@@ -61,6 +61,7 @@
 
 * {
 	box-sizing: border-box;
+	-webkit-tap-highlight-color: transparent;
 }
 
 /* General styles */
@@ -137,7 +138,7 @@ body {
 	font-size: 1em;
 	text-decoration: none;
 	line-height: 1em;
-	transition: background-color 0.2s, border-color 0.2s;
+	transition: background-color 0.2s, border-color 0.2s, padding 0.3s;
 
 	&:hover {
 		background-color: var(--button-hover-bg-color);
@@ -463,6 +464,10 @@ body {
 	.hide-on-small-screen {
 		display: none;
 	}
+
+	.tabs .btn {
+		padding: 8px 10px;
+	}
 }
 
 .hide-on-large-screen {
@@ -499,6 +504,10 @@ body {
 @media (max-width: 768px) {
 	.hide-on-large-screen {
 		display: block;
+	}
+
+	.hide-on-smaller-screen {
+		display: none;
 	}
 
 	.tabs {
