@@ -9,18 +9,18 @@ importers:
   .:
     dependencies:
       refui:
-        specifier: ^0.5.0
-        version: 0.5.0
+        specifier: ^0.5.1
+        version: 0.5.1
     devDependencies:
       refurbish:
         specifier: ^0.1.5
-        version: 0.1.5(refui@0.5.0)(rollup@2.79.2)
+        version: 0.1.5(refui@0.5.1)(rollup@2.79.2)
       vite:
-        specifier: ^7.0.2
-        version: 7.0.2(terser@5.43.1)
+        specifier: ^7.0.3
+        version: 7.0.3(terser@5.43.1)
       vite-plugin-pwa:
         specifier: ^1.0.1
-        version: 1.0.1(vite@7.0.2(terser@5.43.1))(workbox-build@7.3.0)(workbox-window@7.3.0)
+        version: 1.0.1(vite@7.0.3(terser@5.43.1))(workbox-build@7.3.0)(workbox-window@7.3.0)
       workbox:
         specifier: ^0.0.0
         version: 0.0.0
@@ -1449,8 +1449,8 @@ packages:
     resolution: {integrity: sha512-00o4I+DVrefhv+nX0ulyi3biSHCPDe+yLv5o/p6d/UVlirijB8E16FtfwSAi4g3tcqrQ4lRAqQSoFEZJehYEcw==}
     engines: {node: '>= 0.4'}
 
-  refui@0.5.0:
-    resolution: {integrity: sha512-izJ9GOsvt/7S5KEyeyKdqQdFx/OItL3uMqtoC+tex+CMtc0+YAqG6TbqMMZ42oSt0j8TUMlMh+DxUPujSjfKZA==}
+  refui@0.5.1:
+    resolution: {integrity: sha512-1ayAJUROeqJT9S+ssZZXTBX7uhYvWPVMyR0bEEQpcqi5lTVRSNyaFLrymvNzQFxfOZoMrDIb3OgKZGZTWp1esA==}
 
   refurbish@0.1.5:
     resolution: {integrity: sha512-pIQyt329WQ82ZusOnoScuYP2xKG9zYANOEBNfdsgsU/1zqexevfqK922kSvPFaapCRNSICXkYofJwkKQ8zSkOw==}
@@ -1699,8 +1699,8 @@ packages:
       '@vite-pwa/assets-generator':
         optional: true
 
-  vite@7.0.2:
-    resolution: {integrity: sha512-hxdyZDY1CM6SNpKI4w4lcUc3Mtkd9ej4ECWVHSMrOdSinVc2zYOAppHeGc/hzmRo3pxM5blMzkuWHOJA/3NiFw==}
+  vite@7.0.3:
+    resolution: {integrity: sha512-y2L5oJZF7bj4c0jgGYgBNSdIu+5HF+m68rn2cQXFbGoShdhV1phX9rbnxy9YXj82aS8MMsCLAAFkRxZeWdldrQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -3349,12 +3349,12 @@ snapshots:
       get-proto: 1.0.1
       which-builtin-type: 1.2.1
 
-  refui@0.5.0: {}
+  refui@0.5.1: {}
 
-  refurbish@0.1.5(refui@0.5.0)(rollup@2.79.2):
+  refurbish@0.1.5(refui@0.5.1)(rollup@2.79.2):
     dependencies:
       '@rollup/pluginutils': 5.2.0(rollup@2.79.2)
-      refui: 0.5.0
+      refui: 0.5.1
     transitivePeerDependencies:
       - rollup
 
@@ -3672,18 +3672,18 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
-  vite-plugin-pwa@1.0.1(vite@7.0.2(terser@5.43.1))(workbox-build@7.3.0)(workbox-window@7.3.0):
+  vite-plugin-pwa@1.0.1(vite@7.0.3(terser@5.43.1))(workbox-build@7.3.0)(workbox-window@7.3.0):
     dependencies:
       debug: 4.4.1
       pretty-bytes: 6.1.1
       tinyglobby: 0.2.14
-      vite: 7.0.2(terser@5.43.1)
+      vite: 7.0.3(terser@5.43.1)
       workbox-build: 7.3.0
       workbox-window: 7.3.0
     transitivePeerDependencies:
       - supports-color
 
-  vite@7.0.2(terser@5.43.1):
+  vite@7.0.3(terser@5.43.1):
     dependencies:
       esbuild: 0.25.5
       fdir: 6.4.6(picomatch@4.0.2)

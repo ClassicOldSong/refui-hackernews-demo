@@ -71,20 +71,21 @@ Note: hasValue returns plain boolean. Returns true when the value of the signal 
 *   **Structure:** A component is a function `(props, ...children) => (R) => Node`. The inner function receives the renderer `R`.
 *   **Built-in Components:**
 		*   `<If condition={signal}>`: Conditional rendering. Supports `true` and `else` props. For one-off static conditions, you can use inline JS to return the desired branch directly just like in React(but will not have reactivity).
-		*   `<For entries={signalOfArray} track="key" indexed={true}>`: Efficiently renders lists with reconciliation. Use `track` for stable keys. Exposes `getItem()`, `remove()`, `clear()` methods.
+		*   `<For entries={signalOfArray} track="key" indexed={true}>`: Efficiently renders lists with reconciliation. Use `track` for stable keys. Exposes `getItem()`, `remove()`, `clear()` methods. `track` is only needed when data is completely loaded fresh from other sources.
 		*   `<Async future={promise}>`: Manages asynchronous operations (pending, resolved, rejected states). `async` components automatically get `fallback` and `catch` props.
 		*   `<Dynamic is={componentOrTag}>`: Renders a component or HTML tag that can change dynamically.
 		*   `<Fn ctx={value} catch={errorHandler}>`: Executes a function that returns a render function, useful for complex logic with error boundaries.
 *   **`$ref` Prop:** Special prop to get a reference to a DOM element or component instance (as a signal or function). **Critical for HMR in dev mode:** always use `$ref` for component references, not `createComponent()` return values.
 *   **`expose()`:** Allows child components to expose properties/methods to their parent via `$ref`.
 *   **`capture()`:** Captures the current rendering context, useful for running functions (e.g., `expose()`) after `await` calls in async components.
+*   **Importing:** All built-in components can be imported directly from package `refui`
 
 **3. Renderers:**
 *   **Pluggable Architecture:** Decouples component logic from rendering environment.
 *   **`createRenderer(nodeOps, rendererID?)`:** Creates a custom renderer.
 *   **`createDOMRenderer(defaults)` (`refui/dom`):** For interactive web applications.
 		*   **Event Handling:** `on:eventName` (e.g., `on:click`). Supports modifiers like `on-once:`, `on-passive:`, `on-capture:`, `on-prevent:`, `on-stop:`.
-		*   **Attributes/Props:** Automatically handles DOM properties vs. HTML attributes. Use `attr:` prefix for attributes, `prop:` for properties.
+		*   **Attributes/Props:** Automatically handles DOM properties vs. HTML attributes. Use `attr:` prefix for attributes, `prop:` for properties(default, usually don't needed).
 		*   **Browser Preset Directives:** `class:className={signal}` for conditional classes, `style:property={value}` for individual CSS properties.
 *   **`createHTMLRenderer()` (`refui/html`):** For Server-Side Rendering (SSR).
 		*   **Output:** Produces static HTML strings via `serialize()`.
@@ -92,13 +93,13 @@ Note: hasValue returns plain boolean. Returns true when the value of the signal 
 
 **4. JSX Setup:**
 *   **Retained Mode:** JSX templates are evaluated once to build the initial UI.
-*   **Classic Transform (Recommended):** Provides maximum flexibility. Requires configuring `jsxFactory: 'R.c'` and `jsxFragment: 'R.f'` in build tools (Vite, Babel). Components receive `R` as an argument.
+*   **Classic Transform (Recommended)::** Provides maximum flexibility. Requires configuring `jsxFactory: 'R.c'` and `jsxFragment: 'R.f'` in build tools (Vite, Babel). Components receive `R` as an argument.
 *   **Automatic Runtime:** Easier setup, but less flexible. Configures `jsx: 'automatic'` and `jsxImportSource: 'refui'`. Requires `wrap(R)` initialization.
 *   **Hot Module Replacement (HMR):** Use `refurbish` plugin for seamless HMR in development.
 
 **5. Component APIs:**
 *   **`createComponent(template, props?, ...children)`:** Creates component instances
-*   **`render(instance, renderer)`:** Renders component instances
+*   **`renderer.render(container, component, props, ...children)`:** Renders a component into a container, with optional props and children.
 *   **`dispose(instance)`:** Cleans up component resources
 *   **`getCurrentSelf()`:** Gets current component instance
 *   **`snapshot()`:** Creates context snapshots for async operations
@@ -113,6 +114,9 @@ Note: hasValue returns plain boolean. Returns true when the value of the signal 
 *   Use `watch()` for effects without returning cleanup functions.
 *   `useEffect()` handles cleanup automatically and passes additional arguments to the effect.
 *   Always use `$ref` for component references in development with HMR.
+*   **State Management:** For complex applications, consider managing state outside of your components and passing it down as props. This promotes better separation of concerns.
+*   **Manual Triggering:** When mutating arrays or objects directly, use `.trigger()` to notify rEFui of the change.
+*   **Focus Management:** Use the `$ref` prop with a `setTimeout` to reliably manage focus on elements, especially after asynchronous operations.
 
 ---
 
@@ -123,7 +127,7 @@ Note: hasValue returns plain boolean. Returns true when the value of the signal 
 *   **Template Literals:** Use `tpl\`...\`` for reactive template strings or the simple template literal \`...\` for string interpolation in URLs.
 *   **Error Handling in Asynchronous Components:** Implement robust error handling within `async` components. Utilize the `catch` prop of `<Async>` components or direct `fallback`/`catch` props on async components, and `try...catch` blocks for network requests to gracefully manage and display errors to the user.
 *   **Reactivity Pitfalls:** Remember to wrap expressions in `$(...)` within JSX when they need to be reactive. Be mindful of when to use `peek()` or `untrack()` to control signal dependencies and avoid unnecessary re-renders.
-*   **Styling Dynamic Elements:** For dynamically styled elements, leverage rEFui's browser preset capabilities for conditional classes (`class:active={signal}`) and inline styles (`style:color={signal}`) to ensure styles update correctly with state changes.
+*   **Styling Dynamic Elements:** For dynamically styled elements, leverage rEFui's browser preset capabilities for conditional classes (`class:active={signal}`) and inline styles (`style:property={value}`) to ensure styles update correctly with state changes.
 *   **Signal Operations:** Use the extensive signal operation methods (`.and()`, `.eq()`, `.gt()`, etc.) for cleaner conditional logic instead of complex computed signals.
 *   **List Management:** Use `For` component's exposed methods (`getItem()`, `remove()`, `clear()`) for imperative list manipulation when needed.
 
@@ -141,7 +145,7 @@ Note: hasValue returns plain boolean. Returns true when the value of the signal 
 Note: hasValue returns plain boolean. Returns true when the value of the signal is not nullish.
 
 **Component APIs:**
-- `createComponent()`, `render()`, `dispose()` - Component lifecycle
+- `createComponent()`, `renderer.render(container, component, props, ...children)`, `dispose()` - Component lifecycle
 - `expose()`, `capture()`, `snapshot()`, `getCurrentSelf()` - Context management
 - `onDispose()` - Cleanup registration
 
@@ -368,6 +372,17 @@ const storyId = signal(123)
 const commentsUrl = t`https://news.ycombinator.com/item?id=${storyId}`
 ```
 
+### 11. Application Entry Point
+```javascript
+// ✅ rEFui entry point
+import { createDOMRenderer } from "refui/dom";
+import { defaults } from "refui/browser";
+import App from "./App.jsx";
+
+const renderer = createDOMRenderer(defaults);
+renderer.render(document.getElementById("root"), App);
+```
+
 ---
 
 ## Common Patterns in This Project
@@ -378,7 +393,8 @@ const commentsUrl = t`https://news.ycombinator.com/item?id=${storyId}`
 4. **Effects**: `watch(() => { /* reactive code */ })`
 5. **Cleanup**: `useEffect(() => { /* setup */; return () => { /* cleanup */ } })`
 6. **Conditional Classes**: `class:active={isActive}`
-7. **Lists**: `<For entries={items} track="id">{({item}) => <Item data={item}/>}</For>`
+7. **Lists**: `<For entries={items}>{({item}) => <Item data={item}/>}</For>`
 8. **Conditions**: `<If condition={show}>{() => <Content/>}</If>`
 9. **Async**: Components can be `async` functions with `fallback` and `catch` props
 10. **Signal Operations**: Use `.eq()`, `.gt()`, `.and()`, etc. for comparisons
+11. **Rendering**: `renderer.render(container, component, props, ...children)`
