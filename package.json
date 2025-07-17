@@ -14,8 +14,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "refurbish": "^0.1.5",
-    "vite": "^7.0.3",
+    "refurbish": "^0.1.7",
+    "vite": "^7.0.5",
     "vite-plugin-pwa": "^1.0.1",
     "workbox": "^0.0.0",
     "workbox-precaching": "^7.3.0",
@@ -24,7 +24,7 @@
     "workbox-window": "^7.3.0"
   },
   "dependencies": {
-    "refui": "^0.5.1"
+    "refui": "^0.6.0"
   },
-  "packageManager": "pnpm@10.12.4"
+  "packageManager": "pnpm@10.13.1"
 }

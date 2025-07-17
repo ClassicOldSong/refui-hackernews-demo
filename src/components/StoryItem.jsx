@@ -71,14 +71,13 @@ const load = async (storyId, abort) => {
 	return story
 }
 
-const StoryItem = ({ storyId, onSelect, match, abort, refreshSignal }) => {
+const StoryItem = ({ storyId, onSelect, match, abort, whenRefresh }) => {
 	const state = signal('')
 	const storySignal = signal({})
 	const isSelected = match(storyId)
 	let error = null
 
 	const reload = async () => {
-		touch(refreshSignal)
 		if (peek(state) === 'loading') {
 			return
 		}
@@ -108,7 +107,8 @@ const StoryItem = ({ storyId, onSelect, match, abort, refreshSignal }) => {
 		}
 	}
 
-	watch(reload)
+	whenRefresh(reload)
+	reload()
 
 	return (R) => {
 		const renderStory = () => <Story story={storySignal} isSelected={isSelected} onSelect={onSelect} />

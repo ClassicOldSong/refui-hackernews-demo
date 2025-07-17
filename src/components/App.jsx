@@ -1,4 +1,4 @@
-import { signal, For, If, watch, $, useEffect, onDispose, onCondition, nextTick, computed } from 'refui'
+import { signal, For, If, watch, $, useEffect, onDispose, onCondition, nextTick, computed, useAction } from 'refui'
 import { StoryItem } from './StoryItem.jsx'
 import Comments from './Comments'
 import { version } from 'refui/package.json'
@@ -111,18 +111,15 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	const selectedStoryId = signal(initialStoryId)
 	const selectedStory = signal()
 	const storyListWidth = signal(parseFloat(localStorage.getItem('storyListWidth') || '30'))
-	const refreshSignal = signal()
 	const isSmallScreen = signal(window.innerWidth < 768)
 	const menuVisible = signal(false)
 	const menuRef = signal(null)
 	const menuBtnRef = signal(null)
 	const storyListRef = signal(null)
 	const commentsPanelRef = signal(null)
+	const [whenRefresh, refresh] = useAction()
 
-	watch(() => {
-		// When the current section or refresh signal changes, scroll to the top.
-		currentSection.value
-		refreshSignal.value
+	whenRefresh((section) => {
 		if (storyListRef.value) {
 			storyListRef.value.scrollTop = 0
 		}
@@ -228,7 +225,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				storiesLimit.value = 30
 			}
 			allStoryIds.value = ids
-			refreshSignal.trigger()
+			refresh()
 		} catch (error) {
 			if (error.name === 'AbortError') {
 				console.log('Fetch aborted for story IDs:', section)
@@ -422,7 +419,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 								}}
 								match={matchStoryId}
 								abort={abortController.signal}
-								refreshSignal={refreshSignal}
+								whenRefresh={whenRefresh}
 							/>
 						)}
 					</For>
