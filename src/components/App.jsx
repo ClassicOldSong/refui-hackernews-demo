@@ -1,6 +1,7 @@
-import { signal, For, If, watch, $, useEffect, onDispose, onCondition, nextTick, computed, useAction } from 'refui'
+import { signal, For, If, watch, $, useEffect, onCondition, nextTick, computed, useAction } from 'refui'
 import { StoryItem } from './StoryItem.jsx'
-import Comments from './Comments'
+// Lazy load Comments to reduce initial bundle size (forward props)
+const Comments = async (props) => (await import('./Comments')).default(props)
 import { version } from 'refui/package.json'
 
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -412,10 +413,10 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 								storyId={storyId}
 								onSelect={(story) => {
 									noTransition.value = false
-									setTimeout(() => {
+									nextTick(() => {
 										selectedStory.value = story
 										selectedStoryId.value = story.id
-									}, 0)
+									})
 								}}
 								match={matchStoryId}
 								abort={abortController.signal}
@@ -443,7 +444,11 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 						})
 					}
 				>
-					<Comments storyId={selectedStoryId} initialStoryData={selectedStory} />
+					<Comments
+						storyId={selectedStoryId}
+						initialStoryData={selectedStory}
+						fallback={() => <div class="loading">Loading comments...</div>}
+					/>
 				</div>
 			</div>
 		</>
