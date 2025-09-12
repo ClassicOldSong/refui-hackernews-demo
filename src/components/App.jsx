@@ -1,7 +1,6 @@
 import { signal, For, If, watch, $, useEffect, onCondition, nextTick, computed, useAction } from 'refui'
 import { StoryItem } from './StoryItem.jsx'
-// Lazy load Comments to reduce initial bundle size (forward props)
-const Comments = async (props) => (await import('./Comments')).default(props)
+import { Comments } from './Comments.jsx'
 import { version } from 'refui/package.json'
 
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -13,7 +12,8 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		beststories: 'Best',
 		askstories: 'Ask',
 		showstories: 'Show',
-		jobstories: 'Jobs'
+		jobstories: 'Jobs',
+		saved: 'Saved'
 	}
 
 	const theme = signal(localStorage.getItem('theme') || 'auto') // 'auto', 'light', 'dark'
@@ -120,7 +120,43 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	const commentsPanelRef = signal(null)
 	const [whenRefresh, refresh] = useAction()
 
-	whenRefresh((section) => {
+	// Saved stories (persisted in localStorage)
+	const savedIds = signal((() => {
+		try {
+			return JSON.parse(localStorage.getItem('savedStories') || '[]') || []
+		} catch (_) {
+			return []
+		}
+	})())
+
+	const toggleSaved = (storyOrId) => {
+		const id = typeof storyOrId === 'number' ? storyOrId : storyOrId?.id
+		if (!id) return
+		const set = new Set(savedIds.value)
+		if (set.has(id)) {
+			set.delete(id)
+		} else {
+			// Newest first
+			savedIds.value = [id, ...savedIds.value.filter((x) => x !== id)]
+			// Ensure early return after write
+			if (currentSection.value === 'saved') {
+				allStoryIds.value = savedIds.value
+				refresh(currentSection.value, abortController.signal)
+			}
+			return
+		}
+		savedIds.value = Array.from(set)
+		if (currentSection.value === 'saved') {
+			allStoryIds.value = savedIds.value
+			refresh(currentSection.value, abortController.signal)
+		}
+	}
+
+	watch(() => {
+		localStorage.setItem('savedStories', JSON.stringify(savedIds.value))
+	})
+
+	whenRefresh((section, abort) => {
 		if (storyListRef.value) {
 			storyListRef.value.scrollTop = 0
 		}
@@ -218,6 +254,12 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		isLoading.value = true
 
 		try {
+			if (section === 'saved') {
+				storiesLimit.value = 30
+				allStoryIds.value = savedIds.value
+				refresh('saved', abort)
+				return
+			}
 			const response = await fetch(`https://hacker-news.firebaseio.com/v0/${section}.json`, {
 				signal: abort
 			})
@@ -226,7 +268,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 				storiesLimit.value = 30
 			}
 			allStoryIds.value = ids
-			refresh()
+			refresh(section, abort)
 		} catch (error) {
 			if (error.name === 'AbortError') {
 				console.log('Fetch aborted for story IDs:', section)
@@ -243,8 +285,8 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	// --- Initial Setup & Reactivity ---
 	useEffect(() => {
 		abortController = new AbortController()
-		fetchStoryIds(currentSection.value, abortController.signal)
 		allStoryIds.value = []
+		fetchStoryIds(currentSection.value, abortController.signal)
 		return () => {
 			console.log('App component unmounted or refreshed, aborting all pending requests.')
 			abortController.abort()
@@ -421,6 +463,8 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 								match={matchStoryId}
 								abort={abortController.signal}
 								whenRefresh={whenRefresh}
+								savedIds={savedIds}
+								onToggleSaved={toggleSaved}
 							/>
 						)}
 					</For>
@@ -447,7 +491,8 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 					<Comments
 						storyId={selectedStoryId}
 						initialStoryData={selectedStory}
-						fallback={() => <div class="loading">Loading comments...</div>}
+						savedIds={savedIds}
+						onToggleSaved={toggleSaved}
 					/>
 				</div>
 			</div>

@@ -17,12 +17,13 @@ const StoryError =
 	({ error }) =>
 	(R) => <div class="story-error">Error: {error.message}</div>
 
-const Story = ({ story, isSelected, onSelect }) => {
+const Story = ({ story, isSelected, onSelect, savedIds, onToggleSaved }) => {
 	const { score, descendants } = derivedExtract(story, 'score', 'descendants')
 	const { id, by, url, title, time } = story.value
 
 	const commentsUrl = `https://news.ycombinator.com/item?id=${id}`
 	const userUrl = `https://news.ycombinator.com/user?id=${by}`
+	const saved = $(() => savedIds?.value?.includes(id))
 	return (R) => (
 		<a
 			class="story"
@@ -39,7 +40,19 @@ const Story = ({ story, isSelected, onSelect }) => {
 			}}
 		>
 			<div class="story-title">
-				{title}
+				<span class="story-title-text">{title}</span>
+				<button
+					class="save-toggle"
+					aria-pressed={saved}
+					aria-label={$(() => (saved.value ? 'Unsave' : 'Save'))}
+					on:click={(e) => {
+						e.preventDefault()
+						e.stopPropagation()
+						onToggleSaved?.(story.value)
+					}}
+				>
+					{$(() => (saved.value ? '★' : '☆'))}
+				</button>
 			</div>
 			<div class="story-meta">
 				{score} point{addS(score)} by{' '}
@@ -71,13 +84,13 @@ const load = async (storyId, abort) => {
 	return story
 }
 
-const StoryItem = ({ storyId, onSelect, match, abort, whenRefresh }) => {
+const StoryItem = ({ storyId, onSelect, match, abort, whenRefresh, savedIds, onToggleSaved }) => {
 	const state = signal('')
 	const storySignal = signal({})
 	const isSelected = match(storyId)
 	let error = null
 
-	const reload = async () => {
+	const reload = async (section, _abort) => {
 		if (peek(state) === 'loading') {
 			return
 		}
@@ -86,7 +99,7 @@ const StoryItem = ({ storyId, onSelect, match, abort, whenRefresh }) => {
 			error = null
 		}
 		try {
-			const newStory = await load(storyId, abort)
+			const newStory = await load(storyId, _abort)
 			if (!newStory) {
 				state.value = ''
 				return
@@ -108,10 +121,18 @@ const StoryItem = ({ storyId, onSelect, match, abort, whenRefresh }) => {
 	}
 
 	whenRefresh(reload)
-	reload()
+	reload(abort)
 
 	return (R) => {
-		const renderStory = () => <Story story={storySignal} isSelected={isSelected} onSelect={onSelect} />
+		const renderStory = () => (
+			<Story
+				story={storySignal}
+				isSelected={isSelected}
+				onSelect={onSelect}
+				savedIds={savedIds}
+				onToggleSaved={onToggleSaved}
+			/>
+		)
 		return (
 			<Fn>
 				{() => {
@@ -126,6 +147,7 @@ const StoryItem = ({ storyId, onSelect, match, abort, whenRefresh }) => {
 							return () => <StoryError error={error} />
 						}
 						case 'aborted':
+							return 'aborted'
 						default: {
 							return null
 						}

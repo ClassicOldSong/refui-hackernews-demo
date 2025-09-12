@@ -216,6 +216,9 @@ body {
 		font-size: 1.1em;
 		font-weight: bold;
 		margin-bottom: 5px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
 
 		a {
 			color: var(--text-color);
@@ -224,6 +227,11 @@ body {
 			&:hover {
 				text-decoration: underline;
 			}
+		}
+
+		.story-title-text {
+			flex: 1;
+			min-width: 0;
 		}
 	}
 }
@@ -242,7 +250,42 @@ body {
 				text-decoration: underline;
 			}
 		}
+
 	}
+}
+
+/* Reusable Save toggle styling */
+.save-toggle {
+	background: transparent;
+	border: 1px solid var(--button-border-color);
+	color: var(--button-text-color);
+	padding: 3px 8px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 0.85em;
+}
+
+.save-toggle[aria-pressed='true'],
+.save-toggle.active {
+	border-color: var(--active-color);
+	background-color: var(--active-color);
+	color: #fff;
+}
+
+/* Align save button to the right of titles */
+.story .story-title .save-toggle {
+	margin-left: auto;
+}
+
+.comments-header h3 {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+}
+
+.comments-header h3 a {
+	flex: 1;
+	min-width: 0;
 }
 
 /* Comments */

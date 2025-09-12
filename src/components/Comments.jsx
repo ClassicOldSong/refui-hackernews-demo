@@ -113,7 +113,7 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 	}
 }
 
-const Comments = ({ storyId, initialStoryData }) => {
+const Comments = ({ storyId, initialStoryData, savedIds, onToggleSaved }) => {
 	const commentsPerPage = 5
 	const commentsToShow = signal(commentsPerPage)
 	const isLoadingComments = signal(false)
@@ -195,6 +195,7 @@ const Comments = ({ storyId, initialStoryData }) => {
 
 	const commentsUrl = t`https://news.ycombinator.com/item?id=${id}`
 	const userUrl = t`https://news.ycombinator.com/user?id=${by}`
+	const isSaved = $(() => savedIds?.value?.includes(id.value))
 
 	return (R) => (
 		<div class="comments-container">
@@ -214,6 +215,14 @@ const Comments = ({ storyId, initialStoryData }) => {
 												</a>
 											</h3>
 											<div class="story-meta">
+												<button
+													class="save-toggle btn"
+													class:active={isSaved}
+													on:click={() => onToggleSaved?.(id.value)}
+												>
+													{$(() => (isSaved.value ? '★' : '☆'))}
+												</button>
+												{' | '}
 												{score} point{addS(score)} by{' '}
 												<a href={userUrl} target="_blank">
 													{by}
@@ -276,4 +285,4 @@ const Comments = ({ storyId, initialStoryData }) => {
 	)
 }
 
-export default Comments
+export { Comments }
