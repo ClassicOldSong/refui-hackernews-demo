@@ -16,6 +16,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		saved: 'Saved'
 	}
 
+
 	const theme = signal(localStorage.getItem('theme') || 'auto') // 'auto', 'light', 'dark'
 	const systemIsDark = signal(window.matchMedia('(prefers-color-scheme: dark)').matches)
 
@@ -68,6 +69,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 
 	const parseHash = () => {
 		const hash = window.location.hash.substring(1)
+
 		const parts = hash.split('/')
 
 		let section = 'topstories' // Default section
@@ -86,6 +88,8 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		return { section, storyId }
 	}
 
+	let topStoriesBackstopInjected = false
+
 	const updateHash = (section, storyId, replace = false) => {
 		const oldHash = window.location.hash.substring(1)
 		const wasOnStory = oldHash.includes('/story/')
@@ -94,8 +98,11 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		if (storyId) {
 			newHash = `${section}/story/${storyId}`
 		}
+		const leavingStory = wasOnStory && !storyId
+		const shouldReplace = replace || (leavingStory && !topStoriesBackstopInjected)
+
 		if (oldHash !== newHash) {
-			if (replace || (!storyId && wasOnStory)) {
+			if (shouldReplace) {
 				location.replace(`#${newHash}`)
 			} else {
 				window.location.hash = newHash
@@ -103,7 +110,47 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		}
 	}
 
+
 	const { section: initialSection, storyId: initialStoryId } = parseHash()
+
+	const ensureTopStoriesBackstop = (section, storyId) => {
+		if (topStoriesBackstopInjected || storyId == null) return
+		const canonicalStoryHash = `${section}/story/${storyId}`
+		const legacyStoryHash = `story/${storyId}`
+		const currentHashFragment = window.location.hash.substring(1)
+
+		if (currentHashFragment !== canonicalStoryHash && currentHashFragment !== legacyStoryHash) return
+
+		const baseURL = `${window.location.pathname}${window.location.search}`
+		const canonicalStoryURL = `${baseURL}#${canonicalStoryHash}`
+		const topStoriesURL = `${baseURL}#topstories`
+
+		if (typeof history.replaceState === 'function' && typeof history.pushState === 'function') {
+			history.replaceState(null, '', topStoriesURL)
+			history.pushState(null, '', canonicalStoryURL)
+		} else {
+			location.replace(topStoriesURL)
+			window.location.hash = canonicalStoryHash
+		}
+
+		topStoriesBackstopInjected = true
+	}
+
+	if (initialStoryId != null) {
+		const canonicalStoryHash = `${initialSection}/story/${initialStoryId}`
+		const legacyStoryHash = `story/${initialStoryId}`
+		const currentHashFragment = window.location.hash.substring(1)
+
+		if (currentHashFragment === legacyStoryHash) {
+			if (typeof history.replaceState === 'function') {
+				history.replaceState(null, '', `#${canonicalStoryHash}`)
+			} else {
+				window.location.hash = canonicalStoryHash
+			}
+		}
+
+		ensureTopStoriesBackstop(initialSection, initialStoryId)
+	}
 
 	const allStoryIds = signal([]) // Stores all fetched story IDs for the current section
 	const storiesLimit = signal(30) // Number of stories to display
@@ -177,6 +224,10 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 	})
 
 	useEffect(() => {
+		ensureTopStoriesBackstop(currentSection.value, selectedStoryId.value)
+	})
+
+	useEffect(() => {
 		const handleClickOutside = (event) => {
 			if (
 				menuRef.value &&
@@ -228,6 +279,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 			selectedStoryId.value = newStoryId
 		}
 	}
+
 
 	const onResize = () => {
 		isSmallScreen.value = window.innerWidth < 768
