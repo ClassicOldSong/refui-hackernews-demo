@@ -35,6 +35,7 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 
 		const userUrl = `https://news.ycombinator.com/user?id=${comment.by}`
 		const storyUrl = t`https://news.ycombinator.com/item?id=${storyData.value?.id}`
+		const isDelayed = comment.text?.trim?.() === '[delayed]'
 
 		const commentsPerPage = 5
 		const commentsToShow = signal(depth >= MAX_DEPTH ? 0 : commentsPerPage)
@@ -51,7 +52,7 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 		const isDeleted = comment.dead || comment.deleted
 
 		return (R) => (
-			<div class="comment-item" class:deleted-comment={isDeleted}>
+			<div class="comment-item" class:deleted-comment={isDeleted} class:delayed-comment={isDelayed}>
 				<If condition={isDeleted}>
 					{() => <div>{comment.dead ? '[moderated]' : '[deleted]'}</div>}
 					{() => (
@@ -67,7 +68,11 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 								</a>
 							</div>
 							<div class="comment-text">
-								<Parse text={comment.text} parser={addTargetBlankToLinks} />
+								{isDelayed ? (
+									<span class="delayed-message">[delayed]</span>
+								) : (
+									<Parse text={comment.text} parser={addTargetBlankToLinks} />
+								)}
 							</div>
 						</>
 					)}

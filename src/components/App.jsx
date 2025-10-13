@@ -5,7 +5,7 @@ import { version } from 'refui/package.json'
 
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
 
-const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updateSW, installPrompt }) => {
+const App = ({ whenNeedRefresh, whenOfflineReady, whenInstallPrompt, checkSWUpdate, updateSW }) => {
 	const SECTIONS = {
 		topstories: 'Top',
 		newstories: 'New',
@@ -16,9 +16,23 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		saved: 'Saved'
 	}
 
-
 	const theme = signal(localStorage.getItem('theme') || 'auto') // 'auto', 'light', 'dark'
 	const systemIsDark = signal(window.matchMedia('(prefers-color-scheme: dark)').matches)
+	const isUpdateReady = signal(false)
+	const isOfflineReady = signal(false)
+	const installPrompt = signal(null)
+
+	whenNeedRefresh((flag = true) => {
+		isUpdateReady.value = !!flag
+	})
+
+	whenOfflineReady(() => {
+		isOfflineReady.value = true
+	})
+
+	whenInstallPrompt((event) => {
+		installPrompt.value = event
+	})
 
 	const isDarkMode = computed(() => {
 		if (theme.value === 'auto') {
@@ -58,14 +72,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 		localStorage.setItem('theme', theme.value)
 	})
 
-	watch(() => {
-		if (isDarkMode.value) {
-			document.body.classList.add('dark-mode')
-		} else {
-			document.body.classList.remove('dark-mode')
-		}
-		updateThemeColor()
-	})
+	const canShowUpdatePrompt = $(() => !!checkSWUpdate.value && isUpdateReady.value)
 
 	const parseHash = () => {
 		const hash = window.location.hash.substring(1)
@@ -363,6 +370,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 
 	return (R) => (
 		<>
+			<div m:syncTheme={isDarkMode} hidden></div>
 			<div class="tabs">
 				<If condition={selectedStoryId.and(isSmallScreen)}>
 					{() => (
@@ -380,7 +388,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 						<button
 							$ref={menuBtnRef}
 							class="btn"
-							class:active={needRefresh}
+							class:active={isUpdateReady}
 							class:hidden={() => !isSmallScreen.value}
 							on:click={() => (menuVisible.value = !menuVisible.value)}
 						>
@@ -404,13 +412,17 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 					>
 						Star on GitHub
 					</a>
-					<If condition={needRefresh}>
+					<If condition={isUpdateReady}>
 						{() => (
 							<button
 								class="btn active"
 								on:click={() => {
-									if (needRefresh.value) return updateSW()
-									else checkSWUpdate.value?.()
+									if (isUpdateReady.value) {
+										updateSW()
+										isUpdateReady.value = false
+									} else {
+										checkSWUpdate.value?.()
+									}
 								}}
 							>
 								Update
@@ -458,7 +470,7 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 					{() => (
 						<button
 							class="btn"
-							class:active={offlineReady}
+							class:active={isOfflineReady}
 							on:click={async () => {
 								const result = await installPrompt.value.prompt()
 								if (result.outcome === 'accepted') installPrompt.value = null
@@ -468,13 +480,17 @@ const App = ({ updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updat
 						</button>
 					)}
 				</If>
-				<If condition={checkSWUpdate.and(needRefresh)}>
+				<If condition={canShowUpdatePrompt}>
 					{() => (
 						<button
 							class="btn active hide-on-smaller-screen"
 							on:click={() => {
-								if (needRefresh.value) return updateSW()
-								else checkSWUpdate.value?.()
+								if (isUpdateReady.value) {
+									updateSW()
+									isUpdateReady.value = false
+								} else {
+									checkSWUpdate.value?.()
+								}
 							}}
 						>
 							Update

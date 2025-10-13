@@ -114,6 +114,18 @@ This project uses rEFui (retained-mode) with the DOM renderer and the Browser pr
 - Derived object access via `derivedExtract` (see `Comments.jsx`).
 - URL building via `t` template literals.
 - Event options using `on-once:*` and `on-passive:*`.
+- Cross-scope eventing via `useAction` (see `App.jsx` for SW prompts).
+- DOM-side effects encapsulated as renderer macros (see `syncTheme` macro in `src/main.js`).
+- Signals kept reactive by reading through helpers instead of destructuring `.value` (see `StoryItem.jsx`).
+
+## Latest rEFui Best Practices (2025-10-13)
+- Create one renderer instance at the entry point and reuse it everywhere; register macros on that renderer before rendering (`src/main.js` follows this).
+- Keep JSX reads reactive: prefer `derivedExtract`, `$(() => ...)`, or `readAll` instead of pulling `.value` into plain variables—only destructure from `sig.value` directly when you are sure the referenced fields never change.
+- Wrap DOM-side effects and global listeners in macros or lifecycle hooks when the behavior is duplicated or shared; isolated one-offs can stay inline.
+- Prefer `useAction` for “push” style notifications (service worker, install prompts) instead of sharing writable signals across modules.
+- Memoize expensive branches with `memo`/`useMemo` and cache long lists with `createCache` when measuring list perf.
+- Defer synchronous assumptions: signal writes flush asynchronously—use `nextTick`/`tick` when you need to read updated values after mutations.
+- Use rEFui control primitives (`If`, `For`, `Async`) rather than manual branches so disposal and lifecycle stay consistent.
 
 ## Build and Debug Tips
 - Use `pnpm build` to check type and build errors. `pnpm dev` starts a server and does not exit automatically.
@@ -122,5 +134,5 @@ This project uses rEFui (retained-mode) with the DOM renderer and the Browser pr
 ## Quick Reference
 - Renderer setup: see `vite.config.js` for PWA and JSX config.
 - Entry: `src/main.js` initializes the DOM renderer and mounts `App`.
-- rEFui package: `node_modules/refui/src` (and the linked source under `rEFui/src`) contains the authoritative API for version `0.6.3` used here.
+- rEFui package: `node_modules/refui/src` (and the linked source under `rEFui/src`) contains the authoritative API for version `0.6.5` used here.
 - Docs (local, clickable): `rEFui/docs/index.md`, `rEFui/docs/API.md`, `rEFui/docs/Components.md`, `rEFui/docs/Signal.md`, `rEFui/docs/DOMRenderer.md`, `rEFui/docs/JSX.md`.

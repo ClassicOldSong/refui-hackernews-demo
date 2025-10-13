@@ -18,17 +18,26 @@ const StoryError =
 	(R) => <div class="story-error">Error: {error.message}</div>
 
 const Story = ({ story, isSelected, onSelect, savedIds, onToggleSaved }) => {
-	const { score, descendants } = derivedExtract(story, 'score', 'descendants')
-	const { id, by, url, title, time } = story.value
+	const { id, by, url, title, time, score, descendants } = derivedExtract(
+		story,
+		'id',
+		'by',
+		'url',
+		'title',
+		'time',
+		'score',
+		'descendants'
+	)
 
-	const commentsUrl = `https://news.ycombinator.com/item?id=${id}`
-	const userUrl = `https://news.ycombinator.com/user?id=${by}`
-	const saved = $(() => savedIds?.value?.includes(id))
+	const commentsUrl = $(() => `https://news.ycombinator.com/item?id=${id.value}`)
+	const userUrl = $(() => `https://news.ycombinator.com/user?id=${by.value}`)
+	const storyHref = $(() => url.value || commentsUrl.value)
+	const saved = $(() => savedIds?.value?.includes(id.value))
 	return (R) => (
 		<a
 			class="story"
 			class:selected={isSelected}
-			href={url || commentsUrl}
+			href={storyHref}
 			target="_blank"
 			rel="noopener noreferrer"
 			on:click={(e) => {

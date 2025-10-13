@@ -2,23 +2,23 @@ import './style.css'
 import { registerSW } from 'virtual:pwa-register'
 import { createDOMRenderer } from 'refui/dom';
 import { defaults } from 'refui/browser';
-import { signal } from 'refui';
+import { signal, watch, read, onDispose, useAction } from 'refui';
 import App from './components/App.jsx';
 
 // Check update per 6 hour
 const intervalMS = 6 * 60 * 60 * 1000
 
-const needRefresh = signal(false)
-const offlineReady = signal(false)
+const [whenNeedRefresh, notifyNeedRefresh] = useAction(false)
+const [whenOfflineReady, notifyOfflineReady] = useAction(false)
+const [whenInstallPrompt, notifyInstallPrompt] = useAction(null)
 const checkSWUpdate = signal()
-const installPrompt = signal()
 
 const updateSW = registerSW({
 	onNeedRefresh() {
-		needRefresh.value = true
+		notifyNeedRefresh(true)
 	},
 	onOfflineReady() {
-		offlineReady.value = true
+		notifyOfflineReady(true)
 	},
 	onRegisteredSW(swUrl, r) {
 		if (r) {
@@ -45,20 +45,54 @@ const updateSW = registerSW({
 
 window.addEventListener('beforeinstallprompt', (event) => {
 	event.preventDefault()
-	installPrompt.value = event
+	notifyInstallPrompt(event)
 })
 
 const renderer = createDOMRenderer(defaults);
-
 const root = document.getElementById('app')
 
-const updateThemeColor = () => {
-	const themeColor = root.computedStyleMap?.().get('background-color').toString()
+renderer.useMacro({
+	name: 'syncTheme',
+	handler(_node, themeState) {
+		if (!themeState) return
 
-	if (themeColor) {
-		const metaTag = document.head.querySelector('meta[name="theme-color"]')
-		metaTag.content = themeColor
+		const applyTheme = () => {
+			const isDark = !!read(themeState)
+			document.body.classList.toggle('dark-mode', isDark)
+
+			const metaTag = document.head.querySelector('meta[name="theme-color"]')
+			if (!metaTag || !root) {
+				return
+			}
+
+			const mapped = root.computedStyleMap?.().get('background-color')
+			const color =
+				(typeof mapped?.toString === 'function' && mapped.toString()) ||
+				window.getComputedStyle(root).getPropertyValue('background-color')
+
+			if (color) {
+				metaTag.content = color.trim()
+			}
+		}
+
+		const stop = watch(() => {
+			read(themeState)
+			applyTheme()
+		})
+
+		onDispose(() => {
+			stop()
+			document.body.classList.remove('dark-mode')
+		})
+
+		applyTheme()
 	}
-}
+})
 
-renderer.render(root, App, { updateThemeColor, needRefresh, offlineReady, checkSWUpdate, updateSW, installPrompt });
+renderer.render(root, App, {
+	whenNeedRefresh,
+	whenOfflineReady,
+	whenInstallPrompt,
+	checkSWUpdate,
+	updateSW
+});
