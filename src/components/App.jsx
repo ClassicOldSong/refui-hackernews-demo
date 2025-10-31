@@ -117,7 +117,6 @@ const App = ({ whenNeedRefresh, whenOfflineReady, whenInstallPrompt, checkSWUpda
 		}
 	}
 
-
 	const { section: initialSection, storyId: initialStoryId } = parseHash()
 
 	const ensureTopStoriesBackstop = (section, storyId) => {
@@ -175,13 +174,15 @@ const App = ({ whenNeedRefresh, whenOfflineReady, whenInstallPrompt, checkSWUpda
 	const [whenRefresh, refresh] = useAction()
 
 	// Saved stories (persisted in localStorage)
-	const savedIds = signal((() => {
-		try {
-			return JSON.parse(localStorage.getItem('savedStories') || '[]') || []
-		} catch (_) {
-			return []
-		}
-	})())
+	const savedIds = signal(
+		(() => {
+			try {
+				return JSON.parse(localStorage.getItem('savedStories') || '[]') || []
+			} catch (_) {
+				return []
+			}
+		})()
+	)
 
 	const toggleSaved = (storyOrId) => {
 		const id = typeof storyOrId === 'number' ? storyOrId : storyOrId?.id
@@ -287,7 +288,6 @@ const App = ({ whenNeedRefresh, whenOfflineReady, whenInstallPrompt, checkSWUpda
 		}
 	}
 
-
 	const onResize = () => {
 		isSmallScreen.value = window.innerWidth < 768
 	}
@@ -358,7 +358,7 @@ const App = ({ whenNeedRefresh, whenOfflineReady, whenInstallPrompt, checkSWUpda
 		menuVisible.value = false
 	}
 
-	const Sections = () => (R) => (
+	const Sections = (
 		<>
 			{Object.entries(SECTIONS).map(([name, value]) => (
 				<button class="btn" class:active={currentSection.eq(name)} on:click={() => handleSectionChange(name)}>
@@ -368,7 +368,7 @@ const App = ({ whenNeedRefresh, whenOfflineReady, whenInstallPrompt, checkSWUpda
 		</>
 	)
 
-	return (R) => (
+	return (
 		<>
 			<div m:syncTheme={isDarkMode} hidden></div>
 			<div class="tabs">
@@ -398,7 +398,7 @@ const App = ({ whenNeedRefresh, whenOfflineReady, whenInstallPrompt, checkSWUpda
 				</If>
 				<h1 class="page-title">HackerNews</h1>
 				<div $ref={menuRef} class:visible={menuVisible} class="collapsible-menu">
-					<Sections />
+					{Sections}
 					<button class="btn" on:click={cycleTheme}>
 						{themeButtonLabel}
 					</button>
@@ -439,7 +439,7 @@ const App = ({ whenNeedRefresh, whenOfflineReady, whenInstallPrompt, checkSWUpda
 				</div>
 				<div class="overlay" class:visible={menuVisible} on:click={() => (menuVisible.value = false)}></div>
 				<div class="nav-buttons">
-					<Sections />
+					{Sections}
 				</div>
 				<span class="tab-spacer" />
 				<span class="hide-on-small-screen">

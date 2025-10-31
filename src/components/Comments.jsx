@@ -4,7 +4,7 @@ import { addTargetBlankToLinks } from '../utils/dom.js'
 import { formatTime } from '../utils/time.js'
 import { addS } from '../utils/misc.js'
 
-const CommentFallback = () => (R) => (
+const CommentFallback = () => (
 	<div class="comment-item comment-placeholder">
 		<div class="comment-meta">
 			<span class="placeholder-text"></span>
@@ -16,9 +16,7 @@ const CommentFallback = () => (R) => (
 	</div>
 )
 
-const ErrorFallback =
-	({ error }) =>
-	(R) => <div class="comment-error">Error: {error.message}</div>
+const ErrorFallback = ({ error }) => <div class="comment-error">Error: {error.message}</div>
 
 const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 	const MAX_DEPTH = 3

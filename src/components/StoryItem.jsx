@@ -2,7 +2,7 @@ import { peek, signal, $, derivedExtract, Fn } from 'refui'
 import { formatTime } from '../utils/time.js'
 import { addS } from '../utils/misc.js'
 
-const StoryFallback = () => (R) => (
+const StoryFallback = () => (
 	<div class="story story-placeholder">
 		<div class="story-title">
 			<a class="placeholder-text"></a>
@@ -14,8 +14,7 @@ const StoryFallback = () => (R) => (
 )
 
 const StoryError =
-	({ error }) =>
-	(R) => <div class="story-error">Error: {error.message}</div>
+	({ error }) => <div class="story-error">Error: {error.message}</div>
 
 const Story = ({ story, isSelected, onSelect, savedIds, onToggleSaved }) => {
 	const { id, by, url, title, time, score, descendants } = derivedExtract(
