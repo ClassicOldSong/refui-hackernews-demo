@@ -14,17 +14,17 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "refurbish": "^0.1.7",
-    "vite": "^7.1.12",
+    "refurbish": "^0.1.8",
+    "vite": "^7.2.4",
     "vite-plugin-pwa": "^1.1.0",
     "workbox": "^0.0.0",
-    "workbox-precaching": "^7.3.0",
-    "workbox-routing": "^7.3.0",
-    "workbox-strategies": "^7.3.0",
-    "workbox-window": "^7.3.0"
+    "workbox-precaching": "^7.4.0",
+    "workbox-routing": "^7.4.0",
+    "workbox-strategies": "^7.4.0",
+    "workbox-window": "^7.4.0"
   },
   "dependencies": {
-    "refui": "^0.8.1"
+    "refui": "^0.8.3"
   },
-  "packageManager": "pnpm@10.20.0"
+  "packageManager": "pnpm@10.23.0"
 }
