@@ -20,6 +20,9 @@ const ErrorFallback = ({ error }) => <div class="comment-error">Error: {error.me
 
 const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 	const MAX_DEPTH = 3
+	if (abort && abort.aborted) {
+		abort = null
+	}
 	try {
 		const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${commentId}.json`, { signal: abort })
 		if (!response.ok) {

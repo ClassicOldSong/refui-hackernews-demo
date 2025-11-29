@@ -357,7 +357,7 @@ body {
 	}
 
 	.delayed-message {
-		display: inline-block;
+		display: block;
 		padding: 6px 8px;
 		border-radius: 4px;
 		background-color: var(--placeholder-bg);

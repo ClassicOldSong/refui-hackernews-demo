@@ -24,7 +24,7 @@
     "workbox-window": "^7.4.0"
   },
   "dependencies": {
-    "refui": "^0.8.5"
+    "refui": "^0.8.6"
   },
   "packageManager": "pnpm@10.24.0"
 }
