@@ -72,7 +72,7 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 								{isDelayed ? (
 									<span class="delayed-message">[delayed]</span>
 								) : (
-									<Parse text={comment.text} parser={addTargetBlankToLinks} />
+									<Parse source={comment.text} parser={addTargetBlankToLinks} />
 								)}
 							</div>
 						</>
@@ -243,7 +243,7 @@ const Comments = ({ storyId, initialStoryData, savedIds, onToggleSaved }) => {
 											<If condition={text}>
 												{() => (
 													<div class="story-text">
-														<Parse text={text} parser={addTargetBlankToLinks} />
+														<Parse source={text} parser={addTargetBlankToLinks} />
 													</div>
 												)}
 											</If>
