@@ -26,8 +26,7 @@ export default defineConfig({
 		}),
 	],
 	esbuild: {
-		jsxFactory: 'R.c',
-		jsxFragment: 'R.f',
-		jsxInject: 'import { R } from "refui/reflow"'
+		jsx: 'automatic',
+		jsxImportSource: 'refui'
 	}
 });
