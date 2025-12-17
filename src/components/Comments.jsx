@@ -164,9 +164,10 @@ const Comments = ({ storyId, initialStoryData, savedIds, onToggleSaved }) => {
 
 		if (!lastStoryId) {
 			storyData.value = null
-			commentsToShow.value = commentsPerPage
-			await nextTick()
 		}
+
+		commentsToShow.value = commentsPerPage
+		await nextTick()
 
 		lastStoryId = storyId.value
 
