@@ -1,4 +1,4 @@
-import { signal, For, If, $, t, watch, onDispose, derivedExtract, readAll, tick, Suspense } from 'refui'
+import { signal, For, If, $, t, watch, onDispose, derivedExtract, readAll, nextTick, Suspense } from 'refui'
 import { Parse } from 'refui/extras/parse.js'
 import { addTargetBlankToLinks } from '../utils/dom.js'
 import { formatTime } from '../utils/time.js'
@@ -16,8 +16,17 @@ const CommentFallback = () => (
 	</div>
 )
 
-const ErrorFallback = ({ error }) => {
-	return <div class="comment-error">Error: {error.message}</div>
+const ErrorFallback = ({ error, retry }) => {
+	return (
+		<div class="comment-error">
+			<span class="error-message">Error: {error.message}</span>
+			{retry && (
+				<button class="btn retry-btn" type="button" on:click={retry}>
+					Retry
+				</button>
+			)}
+		</div>
+	)
 }
 
 const CommentItem = async ({ commentId, abort, storyData, depth }) => {
@@ -85,13 +94,20 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 						<div class="comment-children">
 							<If condition={$(() => depth < MAX_DEPTH || commentsToShow.value > 0)}>
 								{() => (
-									<For entries={childComments}>
-										{({ item: kidId }) => (
+									<For entries={childComments} indexed>
+										{({ item: kidId, index }) => (
 											<CommentItem
 												commentId={kidId}
 												abort={abort}
 												fallback={CommentFallback}
 												catch={ErrorFallback}
+												retry={async () => {
+													childComments.value.splice(index, 1)
+													childComments.trigger()
+													await nextTick()
+													childComments.value.splice(index, 0, kidId)
+													childComments.trigger()
+												}}
 												storyData={storyData}
 												depth={depth + 1}
 											/>
@@ -149,7 +165,7 @@ const Comments = ({ storyId, initialStoryData, savedIds, onToggleSaved }) => {
 		if (!lastStoryId) {
 			storyData.value = null
 			commentsToShow.value = commentsPerPage
-			await tick()
+			await nextTick()
 		}
 
 		lastStoryId = storyId.value
@@ -256,9 +272,19 @@ const Comments = ({ storyId, initialStoryData, savedIds, onToggleSaved }) => {
 												<>
 													<If condition={$(() => comments.value.length > 0)}>
 														{() => (
-															<For entries={comments}>
-																{({ item: commentId }) => (
-																	<Suspense fallback={CommentFallback} catch={ErrorFallback}>
+															<For entries={comments} indexed>
+																{({ item: commentId, index }) => (
+																	<Suspense
+																		fallback={CommentFallback}
+																		catch={ErrorFallback}
+																		retry={async () => {
+																			comments.value.splice(index, 1)
+																			comments.trigger()
+																			await nextTick()
+																			comments.value.splice(index, 0, commentId)
+																			comments.trigger()
+																		}}
+																	>
 																		<CommentItem
 																			commentId={commentId}
 																			// fallback={CommentFallback}

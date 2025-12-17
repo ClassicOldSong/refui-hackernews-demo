@@ -450,6 +450,33 @@ body {
 	padding: 15px;
 	border-radius: 5px;
 	margin-bottom: 10px;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.story-error .error-message,
+.comment-error .error-message {
+	flex: 1;
+	min-width: 0;
+}
+
+.story-error .retry-btn,
+.comment-error .retry-btn {
+	margin-left: auto;
+	padding: 6px 10px;
+	font-size: 0.9em;
+	background-color: transparent;
+	border-color: var(--error-border);
+	color: var(--error-text);
+}
+
+.story-error .retry-btn:hover,
+.comment-error .retry-btn:hover {
+	background-color: var(--error-border);
+	border-color: var(--error-border);
+	color: #fff;
 }
 
 .deleted-comment {
@@ -697,4 +724,3 @@ body {
 		}
 	}
 }
-

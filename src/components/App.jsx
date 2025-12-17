@@ -517,8 +517,8 @@ const App = ({ whenNeedRefresh, whenOfflineReady, whenInstallPrompt, checkSWUpda
 			>
 				<div $ref={storyListRef} class="story-list" style={$(() => `flex-basis: ${storyListWidth.value}%;`)}>
 					<If condition={isLoading}>{() => <div class="loading">Loading story list...</div>}</If>
-					<For entries={storyIds}>
-						{({ item: storyId }) => (
+					<For entries={storyIds} indexed>
+						{({ item: storyId, index }) => (
 							<StoryItem
 								storyId={storyId}
 								onSelect={(story) => {
@@ -530,6 +530,13 @@ const App = ({ whenNeedRefresh, whenOfflineReady, whenInstallPrompt, checkSWUpda
 								}}
 								match={matchStoryId}
 								abort={abortController.signal}
+								retry={async () => {
+									storyIds.value.splice(index, 1)
+									storyIds.trigger()
+									await nextTick()
+									storyIds.value.splice(index, 0, storyId)
+									storyIds.trigger()
+								}}
 								whenRefresh={whenRefresh}
 								savedIds={savedIds}
 								onToggleSaved={toggleSaved}

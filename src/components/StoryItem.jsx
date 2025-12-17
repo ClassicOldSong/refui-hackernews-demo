@@ -14,7 +14,16 @@ const StoryFallback = () => (
 )
 
 const StoryError =
-	({ error }) => <div class="story-error">Error: {error.message}</div>
+	({ error, retry }) => (
+		<div class="story-error">
+			<span class="error-message">Error: {error.message}</span>
+			{retry && (
+				<button class="btn retry-btn" type="button" on:click={retry}>
+					Retry
+				</button>
+			)}
+		</div>
+	)
 
 const Story = ({ story, isSelected, onSelect, savedIds, onToggleSaved }) => {
 	const { id, by, url, title, time, score, descendants } = derivedExtract(
@@ -92,7 +101,7 @@ const load = async (storyId, abort) => {
 	return story
 }
 
-const StoryItem = ({ storyId, onSelect, match, abort, whenRefresh, savedIds, onToggleSaved }) => {
+const StoryItem = ({ storyId, onSelect, match, abort, retry, whenRefresh, savedIds, onToggleSaved }) => {
 	const state = signal('')
 	const storySignal = signal({})
 	const isSelected = match(storyId)
@@ -151,7 +160,7 @@ const StoryItem = ({ storyId, onSelect, match, abort, whenRefresh, savedIds, onT
 						return renderStory
 					}
 					case 'error': {
-						return () => <StoryError error={error} />
+						return () => <StoryError error={error} retry={retry}/>
 					}
 					case 'aborted':
 						return 'aborted'
