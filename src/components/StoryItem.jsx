@@ -32,7 +32,7 @@ const Story = ({ story, isSelected, onSelect, savedIds, onToggleSaved }) => {
 	const userUrl = $(() => `https://news.ycombinator.com/user?id=${by.value}`)
 	const storyHref = $(() => url.value || commentsUrl.value)
 	const saved = $(() => savedIds?.value?.includes(id.value))
-	return (R) => (
+	return (
 		<a
 			class="story"
 			class:selected={isSelected}
@@ -131,39 +131,37 @@ const StoryItem = ({ storyId, onSelect, match, abort, whenRefresh, savedIds, onT
 	whenRefresh(reload)
 	reload(abort)
 
-	return (R) => {
-		const renderStory = () => (
-			<Story
-				story={storySignal}
-				isSelected={isSelected}
-				onSelect={onSelect}
-				savedIds={savedIds}
-				onToggleSaved={onToggleSaved}
-			/>
-		)
-		return (
-			<Fn>
-				{() => {
-					switch (state.value) {
-						case 'loading': {
-							return () => <StoryFallback />
-						}
-						case 'ready': {
-							return renderStory
-						}
-						case 'error': {
-							return () => <StoryError error={error} />
-						}
-						case 'aborted':
-							return 'aborted'
-						default: {
-							return null
-						}
+	const renderStory = () => (
+		<Story
+			story={storySignal}
+			isSelected={isSelected}
+			onSelect={onSelect}
+			savedIds={savedIds}
+			onToggleSaved={onToggleSaved}
+		/>
+	)
+	return (
+		<Fn>
+			{() => {
+				switch (state.value) {
+					case 'loading': {
+						return () => <StoryFallback />
 					}
-				}}
-			</Fn>
-		)
-	}
+					case 'ready': {
+						return renderStory
+					}
+					case 'error': {
+						return () => <StoryError error={error} />
+					}
+					case 'aborted':
+						return 'aborted'
+					default: {
+						return null
+					}
+				}
+			}}
+		</Fn>
+	)
 }
 
 export { StoryItem }

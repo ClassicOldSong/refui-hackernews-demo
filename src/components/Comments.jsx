@@ -1,4 +1,4 @@
-import { signal, For, If, $, t, watch, onDispose, derivedExtract, readAll, tick } from 'refui'
+import { signal, For, If, $, t, watch, onDispose, derivedExtract, readAll, tick, Suspense } from 'refui'
 import { Parse } from 'refui/extras/parse.js'
 import { addTargetBlankToLinks } from '../utils/dom.js'
 import { formatTime } from '../utils/time.js'
@@ -16,7 +16,9 @@ const CommentFallback = () => (
 	</div>
 )
 
-const ErrorFallback = ({ error }) => <div class="comment-error">Error: {error.message}</div>
+const ErrorFallback = ({ error }) => {
+	return <div class="comment-error">Error: {error.message}</div>
+}
 
 const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 	const MAX_DEPTH = 3
@@ -52,7 +54,7 @@ const CommentItem = async ({ commentId, abort, storyData, depth }) => {
 
 		const isDeleted = comment.dead || comment.deleted
 
-		return (R) => (
+		return (
 			<div class="comment-item" class:deleted-comment={isDeleted} class:delayed-comment={isDelayed}>
 				<If condition={isDeleted}>
 					{() => <div>{comment.dead ? '[moderated]' : '[deleted]'}</div>}
@@ -203,7 +205,7 @@ const Comments = ({ storyId, initialStoryData, savedIds, onToggleSaved }) => {
 	const userUrl = t`https://news.ycombinator.com/user?id=${by}`
 	const isSaved = $(() => savedIds?.value?.includes(id.value))
 
-	return (R) => (
+	return (
 		<div class="comments-container">
 			<If condition={isLoadingStory}>
 				{() => <div class="loading">Loading story...</div>}
@@ -256,14 +258,16 @@ const Comments = ({ storyId, initialStoryData, savedIds, onToggleSaved }) => {
 														{() => (
 															<For entries={comments}>
 																{({ item: commentId }) => (
-																	<CommentItem
-																		commentId={commentId}
-																		fallback={CommentFallback}
-																		catch={ErrorFallback}
-																		storyData={storyData}
-																		abort={abortController.signal}
-																		depth={0}
-																	/>
+																	<Suspense fallback={CommentFallback} catch={ErrorFallback}>
+																		<CommentItem
+																			commentId={commentId}
+																			// fallback={CommentFallback}
+																			// catch={ErrorFallback}
+																			storyData={storyData}
+																			abort={abortController.signal}
+																			depth={0}
+																		/>
+																	</Suspense>
 																)}
 															</For>
 														)}
